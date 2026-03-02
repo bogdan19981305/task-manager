@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:15
     ports:
-      - 5432:5432 # localhost:5432 -> postgres:5432
+      - 5432:${POSTGRES_PORT} # localhost:5432 -> postgres:5432
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -20,9 +20,6 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_CONFIG_SERVER_MODE}
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED}
     depends_on:
-      - postgres
-
-    links:
       - postgres
 
 volumes:
