@@ -1,12 +1,33 @@
-# Full-stack Task manager
+# Task Manager (Fullstack)
 
-### What is Project?
+Monorepo для навчання через production-style фічі.
 
-It's task manager full-stack app where you can login,register,create tasks,boards,
-you can generate reports with advanced filters
+## Structure
 
-### How to start?
+- /backend — NestJS API
 
-paste in your terminal command
-`cd backend`
-`pnpm run start:dev`
+- /frontend — (TODO)
+
+## Prerequisites
+
+- Node.js LTS
+
+- pnpm `npm i -g pnpm`)
+
+## Run backend (dev)
+
+cd backend
+
+pnpm install
+
+pnpm start:dev
+
+API: [http://localhost:3000](http://localhost:3000)
+
+Health: [http://localhost:3000/health](http://localhost:3000/health)
+
+## Current status
+
+- [x] Backend bootstrap
+
+- [x] GET /health
