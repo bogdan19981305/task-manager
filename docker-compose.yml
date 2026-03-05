@@ -5,7 +5,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - ./backend/.env
+      - ./backend/.env.docker
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -15,7 +15,7 @@ services:
       dockerfile: Dockerfile
     container_name: task-board-backend
     env_file:
-      - ./backend/.env
+      - ./backend/.env.docker
     depends_on:
       - postgres
     ports:
@@ -23,7 +23,7 @@ services:
     volumes:
       - ./backend:/app
       - backend_node_modules:/app/node_modules
-    command: ["pnpm", "start:dev"]
+    command: sh -lc "pnpm install && pnpm start:dev"
 
 volumes:
   postgres_data:

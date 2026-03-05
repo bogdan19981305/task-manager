@@ -1,7 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
+import ms from 'ms';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ACCESS_TTL_MS, REFRESH_TTL_MS } from './constants/auth.constants';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
 
@@ -14,53 +16,99 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     const foundUser = await this.prisma.user.findUnique({
-      where: {
-        email: registerDto.email.toLowerCase(),
-      },
+      where: { email: registerDto.email.toLowerCase() },
     });
+
     if (foundUser) {
       throw new UnauthorizedException('Email already in use');
     }
+
     const hashedPassword = await bcryptjs.hash(registerDto.password, 10);
+
     const user = await this.prisma.user.create({
       data: {
         email: registerDto.email.toLowerCase(),
         name: registerDto.name,
         passwordHash: hashedPassword,
       },
-      select: {
-        email: true,
-        name: true,
+      select: { id: true, email: true, name: true },
+    });
+
+    return { email: user.email, name: user.name };
+  }
+
+  private signAccessToken(payload: { userId: number; email: string }) {
+    return this.jwtService.sign(payload, { expiresIn: ms(ACCESS_TTL_MS) });
+  }
+
+  private signRefreshToken(payload: { userId: number; email: string }) {
+    return this.jwtService.sign(payload, { expiresIn: ms(REFRESH_TTL_MS) });
+  }
+
+  private async setRefreshTokenHash(userId: number, refreshToken: string) {
+    const hash = await bcryptjs.hash(refreshToken, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        refreshToken: hash,
       },
     });
-    return user;
   }
 
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        email: loginDto.email.toLowerCase(),
-      },
+      where: { email: loginDto.email.toLowerCase() },
     });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+
     const isPasswordValid = await bcryptjs.compare(
       loginDto.password,
       user.passwordHash,
     );
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
 
-    const token = this.jwtService.sign({ userId: user.id, email: user.email });
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid credentials');
+
+    const payload = { userId: user.id, email: user.email };
+
+    const accessToken = this.signAccessToken(payload);
+    const refreshToken = this.signRefreshToken(payload);
+
+    await this.setRefreshTokenHash(user.id, refreshToken);
 
     return {
-      user: {
-        email: user.email,
-        name: user.name,
-      },
-      token,
+      user: { id: user.id, email: user.email, name: user.name },
+      accessToken,
+      refreshToken,
     };
+  }
+
+  async logout(userId: number) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
+  }
+
+  async refresh(userId: number, refreshToken: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, refreshToken: true },
+    });
+
+    if (!user?.refreshToken) throw new UnauthorizedException('No refresh');
+
+    const ok = await bcryptjs.compare(refreshToken, user.refreshToken);
+    if (!ok) throw new UnauthorizedException('Invalid refresh');
+
+    const payload = { userId: user.id, email: user.email };
+
+    const newAccessToken = this.signAccessToken(payload);
+    const newRefreshToken = this.signRefreshToken(payload);
+
+    await this.setRefreshTokenHash(user.id, newRefreshToken);
+
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 }

@@ -1,43 +1,34 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
+import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PrismaService } from '../../prisma/prisma.service';
-import { UserEntity } from '../entities/user.entity';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AUTH_COOKIES } from '../constants/auth.constants';
 
-type JwtPayload = {
-  userId: number;
-  email: string;
-};
+type JwtPayload = { userId: number; email: string };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    configService: ConfigService,
-    private readonly prismaService: PrismaService,
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
   ) {
-    const secretOrKey = configService.getOrThrow<string>('JWT_SECRET');
-    const jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-    super({ jwtFromRequest, secretOrKey });
+    const secret = configService.getOrThrow<string>('JWT_SECRET');
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => req?.cookies?.[AUTH_COOKIES.access] as string,
+      ]),
+      secretOrKey: secret,
+    });
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.prismaService.user.findUnique({
-      where: { id: payload.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
+    const user = await this.prisma.user.findUnique({
+      where: { id: Number(payload.userId) },
+      select: { id: true, email: true, name: true },
     });
-    if (!user) {
-      throw new UnauthorizedException('Invalid token');
-    }
-    return new UserEntity({
-      ...user,
-      id: user.id,
-      email: user.email,
-      name: user.name ?? undefined,
-    });
+
+    return user;
   }
 }
