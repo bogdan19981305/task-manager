@@ -1,27 +1,30 @@
 services:
   postgres:
     image: postgres:15
+    container_name: task-board-postgres
     ports:
-      - 5432:${POSTGRES_PORT} # localhost:5432 -> postgres:5432
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      - "5432:5432"
+    env_file:
+      - ./backend/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  pgadmin:
-    image: dpage/pgadmin4:9.8
-    ports:
-      - 5050:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: ${PGADMIN_CONFIG_SERVER_MODE}
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED}
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: task-board-backend
+    env_file:
+      - ./backend/.env
     depends_on:
       - postgres
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    command: ["pnpm", "start:dev"]
 
 volumes:
   postgres_data:
-    driver: local
+  backend_node_modules:
