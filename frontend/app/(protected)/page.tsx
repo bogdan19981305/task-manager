@@ -1,3 +1,4 @@
+"use client";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -14,8 +15,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useLogout } from "@/features/auth/login/model/use-logout";
 
 export default function Page() {
+  const { mutate: logout } = useLogout();
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -40,6 +43,7 @@ export default function Page() {
               variant="destructive"
               color="red"
               size="lg"
+              onClick={() => logout()}
             >
               Log out
             </Button>

@@ -37,6 +37,7 @@ export function LoginForm({
   });
 
   const onSubmit = async (data: LoginDto) => {
+    console.log("onSubmit", data);
     await login(data);
   };
 

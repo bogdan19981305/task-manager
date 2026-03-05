@@ -1,23 +1,21 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useMe } from "@/features/auth/queries";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useMe } from "./queries";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const { data, isLoading, isError } = useMe();
+  const { data: me, isLoading, isError } = useMe();
 
   useEffect(() => {
-    if (!isLoading && isError) {
-      const next = encodeURIComponent(pathname ?? "/");
-      router.replace(`/auth/sign-in?next=${next}`);
+    if (!isLoading && (isError || !me)) {
+      router.replace("/auth/sign-in");
     }
-  }, [isLoading, isError, router, pathname]);
+  }, [isLoading, isError, me, router]);
 
-  if (isLoading) return <div className="p-6">Loading...</div>;
-  if (!data) return null;
+  if (isLoading) return null;
+  if (!me) return null;
 
   return <>{children}</>;
 }

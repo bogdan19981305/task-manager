@@ -10,5 +10,6 @@ export function useMe() {
       return res.data;
     },
     retry: false,
+    staleTime: 60_000,
   });
 }
