@@ -13,14 +13,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Gamepad } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
+import { usePathname } from "next/navigation";
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/",
-      isActive: true,
+      url: "/dashboard",
     },
     {
       title: "Tasks",
@@ -28,7 +27,6 @@ const data = {
         {
           title: "All tasks",
           url: "/tasks",
-          isActive: false,
         },
         {
           title: "Create task",
@@ -40,13 +38,15 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/dashboard">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Gamepad className="size-4" />
                 </div>
@@ -63,17 +63,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             {data.navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={item.isActive}>
-                  <a href={item.url} className="font-medium">
+                <SidebarMenuButton asChild isActive={item.url === pathname}>
+                  <Link href={item.url ?? ""} className="font-medium">
                     {item.title}
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
                 {item.items?.length ? (
                   <SidebarMenuSub>
                     {item.items.map((item) => (
                       <SidebarMenuSubItem key={item.title}>
-                        <SidebarMenuSubButton asChild isActive={item.isActive}>
-                          <a href={item.url}>{item.title}</a>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={item.url === pathname}
+                        >
+                          <Link href={item.url ?? ""} className="font-medium">
+                            {item.title}
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
