@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { RegisterDto, registerDtoSchema } from "../model/schema";
 import { useRegister } from "../model/use-register";
@@ -131,7 +132,8 @@ const SignupForm = ({ className, ...props }: React.ComponentProps<"div">) => {
                   Create Account
                 </Button>
                 <FieldDescription className="text-center">
-                  Already have an account? <a href="#">Sign in</a>
+                  Already have an account?{" "}
+                  <Link href="/auth/sign-in">Sign in</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
