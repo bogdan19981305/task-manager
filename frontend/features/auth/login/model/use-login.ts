@@ -12,8 +12,7 @@ export function useLogin() {
       const res = await api.post("/auth/login", dto);
       return res.data;
     },
-    onSuccess: async (data) => {
-      await qc.setQueryData(["me"], data);
+    onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["me"] });
       router.push("/dashboard");
     },
