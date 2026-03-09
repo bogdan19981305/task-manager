@@ -13,8 +13,7 @@ export function useRegister() {
       const res = await api.post("/auth/register", dto);
       return res.data;
     },
-    onSuccess: async (data) => {
-      await qc.setQueryData(["me"], data);
+    onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["me"] });
       toast.success("Account created successfully");
       router.push("/dashboard");
