@@ -41,8 +41,14 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { email, name, refreshToken, accessToken } =
+      await this.authService.register(registerDto);
+    this.setAuthCookies(res, accessToken, refreshToken);
+    return { user: { email, name } };
   }
 
   @Post('login')

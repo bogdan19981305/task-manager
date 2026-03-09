@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "@/shared/lib/providers";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className={`${geistSans.variable} ${geistMono.variable} dark`}>
         <Providers>{children}</Providers>
+        <Toaster theme="dark" position="top-right" richColors />
       </body>
     </html>
   );

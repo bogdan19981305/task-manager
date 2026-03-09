@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import ms from 'ms';
@@ -23,6 +27,10 @@ export class AuthService {
       throw new UnauthorizedException('Email already in use');
     }
 
+    if (registerDto.password !== registerDto.passwordConfirmation) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
     const hashedPassword = await bcryptjs.hash(registerDto.password, 10);
 
     const user = await this.prisma.user.create({
@@ -34,7 +42,13 @@ export class AuthService {
       select: { id: true, email: true, name: true },
     });
 
-    return { email: user.email, name: user.name };
+    const signPayload = { userId: user.id, email: user.email };
+    const accessToken = this.signAccessToken(signPayload);
+    const refreshToken = this.signRefreshToken(signPayload);
+
+    await this.setRefreshTokenHash(user.id, refreshToken);
+
+    return { email: user.email, name: user.name, refreshToken, accessToken };
   }
 
   private signAccessToken(payload: { userId: number; email: string }) {
