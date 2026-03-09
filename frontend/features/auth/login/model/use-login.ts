@@ -15,7 +15,7 @@ export function useLogin() {
     onSuccess: async (data) => {
       await qc.setQueryData(["me"], data);
       await qc.invalidateQueries({ queryKey: ["me"] });
-      router.push("/");
+      router.push("/dashboard");
     },
   });
 }
