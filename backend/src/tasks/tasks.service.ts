@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskCreateDto } from './dto/task-create.dto';
+import { TaskQueryDto } from './dto/task-query.dto';
 import { TaskUpdateDto } from './dto/task-update.dto';
 
 @Injectable()
@@ -18,9 +19,32 @@ export class TasksService {
     return task;
   }
 
-  async getTasks() {
-    const tasks = await this.prisma.task.findMany();
-    return tasks;
+  async getTasks(taskQueryDto: TaskQueryDto) {
+    const { status, assigneeId, creatorId, page, limit } = taskQueryDto;
+
+    const where = {
+      ...(status && { status }),
+      ...(assigneeId && { assigneeId }),
+      ...(creatorId && { creatorId }),
+    };
+
+    const [tasks, total] = await Promise.all([
+      this.prisma.task.findMany({
+        where,
+        skip: ((page ?? 1) - 1) * (limit ?? 10),
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.task.count({ where }),
+    ]);
+
+    return {
+      tasks,
+      total,
+      page: page ?? 1,
+      limit: limit ?? 10,
+      totalPages: Math.ceil(total / (limit ?? 10)),
+    };
   }
 
   async getTask(id: string) {
