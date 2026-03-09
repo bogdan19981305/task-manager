@@ -18,5 +18,32 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  createdTasks   Task[] @relation("CreatedTasks")
+  assignedTasks  Task[] @relation("AssignedTasks")
+
   @@map("users")
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  status    TaskStatus @default(TODO)
+  
+  creatorId   Int
+  creator     User   @relation("CreatedTasks", fields: [creatorId], references: [id])
+  
+  assigneeId  Int?
+  assignee    User?  @relation("AssignedTasks", fields: [assigneeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
 }
