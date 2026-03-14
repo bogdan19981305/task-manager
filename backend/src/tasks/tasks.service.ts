@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TASK_INCLUDE_CONSTANT } from './constants/task-include-constant';
 import { TaskCreateDto } from './dto/task-create.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
 import { TaskUpdateDto } from './dto/task-update.dto';
@@ -34,12 +35,13 @@ export class TasksService {
         skip: ((page ?? 1) - 1) * (limit ?? 10),
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: TASK_INCLUDE_CONSTANT,
       }),
       this.prisma.task.count({ where }),
     ]);
 
     return {
-      tasks,
+      content: tasks,
       total,
       page: page ?? 1,
       limit: limit ?? 10,
@@ -50,6 +52,7 @@ export class TasksService {
   async getTask(id: string) {
     const task = await this.prisma.task.findUnique({
       where: { id },
+      include: TASK_INCLUDE_CONSTANT,
     });
 
     if (!task) {
@@ -62,6 +65,7 @@ export class TasksService {
   async updateTask(id: string, updateTaskDto: TaskUpdateDto) {
     const task = await this.prisma.task.findUnique({
       where: { id },
+      include: TASK_INCLUDE_CONSTANT,
     });
 
     if (!task) {
@@ -81,12 +85,14 @@ export class TasksService {
     return this.prisma.task.update({
       where: { id: task.id },
       data: updateTaskDto,
+      include: TASK_INCLUDE_CONSTANT,
     });
   }
 
   async deleteTask(id: string) {
     const task = await this.prisma.task.findUnique({
       where: { id },
+      include: TASK_INCLUDE_CONSTANT,
     });
 
     if (!task) {
@@ -95,6 +101,7 @@ export class TasksService {
 
     return this.prisma.task.delete({
       where: { id: task.id },
+      include: TASK_INCLUDE_CONSTANT,
     });
   }
 }
