@@ -14,7 +14,7 @@ import TasksBadgeTask from "./tasks-badge";
 
 type TaskActionType = "start" | "pause" | "complete" | "delete" | "view";
 
-const TasksRow = ({ task }: { task: Task }) => {
+const TasksRow = ({ task, onDelete }: { task: Task; onDelete: () => void }) => {
   const [pendingAction, setPendingAction] = useState<{
     id: string;
     type: TaskActionType;
@@ -25,12 +25,13 @@ const TasksRow = ({ task }: { task: Task }) => {
 
   const isTaskBusy = (taskId: string) => pendingAction?.id === taskId;
 
-  const handleAction = (task: Task, actionType: TaskActionType) => {
+  const handleAction = async (task: Task, actionType: TaskActionType) => {
     setPendingAction({ id: task.id, type: actionType });
-    setTimeout(() => {
+    if (actionType === "delete") {
+      await onDelete();
       setPendingAction(null);
-      console.log(`Action "${actionType}" completed for task:`, task.title);
-    }, 1000);
+      return;
+    }
   };
 
   const busy = isTaskBusy(task.id);
@@ -64,7 +65,7 @@ const TasksRow = ({ task }: { task: Task }) => {
           <div className="flex items-center gap-1">
             {task.status === "TODO" && (
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger asChild className="cursor-pointer">
                   <Button
                     variant="outline"
                     size="icon"
@@ -84,7 +85,7 @@ const TasksRow = ({ task }: { task: Task }) => {
               </Tooltip>
             )}
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger asChild className="cursor-pointer">
                 <Button
                   variant="outline"
                   size="icon"
@@ -103,7 +104,7 @@ const TasksRow = ({ task }: { task: Task }) => {
               <TooltipContent>Delete</TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger asChild className="cursor-pointer">
                 <Button
                   variant="outline"
                   size="icon"

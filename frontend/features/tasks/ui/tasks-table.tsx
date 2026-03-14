@@ -14,11 +14,22 @@ import { useState } from "react";
 import TasksRow from "./tasks-row";
 import { Pagination } from "@/shared/components";
 import { PAGINATION_PAGE_SIZE_DEFAULT } from "@/config/global";
+import { useDeleteTask } from "../model/use-delete";
+import { toast } from "sonner";
 
 export default function TasksTable() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGINATION_PAGE_SIZE_DEFAULT);
   const { data: tasksData, isLoading } = useTasks({ page, limit });
+
+  const { mutate: deleteTask } = useDeleteTask({
+    onSuccess: () => {
+      toast.success("Task deleted successfully");
+    },
+    onError: () => {
+      toast.error("Failed to delete task");
+    },
+  });
 
   return (
     <div className="mb-10">
@@ -46,7 +57,11 @@ export default function TasksTable() {
           <TableBody>
             {!isLoading &&
               (tasksData?.content ?? []).map((task) => (
-                <TasksRow key={task.id} task={task} />
+                <TasksRow
+                  key={task.id}
+                  task={task}
+                  onDelete={() => deleteTask(task.id)}
+                />
               ))}
             {isLoading &&
               [...Array(7)].map((_, index) => (
