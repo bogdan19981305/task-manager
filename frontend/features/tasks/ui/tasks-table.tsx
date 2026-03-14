@@ -16,6 +16,8 @@ import { Pagination } from "@/shared/components";
 import { PAGINATION_PAGE_SIZE_DEFAULT } from "@/config/global";
 import { useDeleteTask } from "../model/use-delete";
 import { toast } from "sonner";
+import { useUpdateTask } from "../model/use-update-task";
+import { TaskStatus, TaskStatusValues } from "../dto/task.dto";
 
 export default function TasksTable() {
   const [page, setPage] = useState(1);
@@ -28,6 +30,15 @@ export default function TasksTable() {
     },
     onError: () => {
       toast.error("Failed to delete task");
+    },
+  });
+
+  const { mutate: updateTask } = useUpdateTask({
+    onSuccess: () => {
+      toast.success("Task updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update task");
     },
   });
 
@@ -61,6 +72,12 @@ export default function TasksTable() {
                   key={task.id}
                   task={task}
                   onDelete={() => deleteTask(task.id)}
+                  onStart={() =>
+                    updateTask({
+                      id: task.id,
+                      data: { status: TaskStatusValues.IN_PROGRESS },
+                    })
+                  }
                 />
               ))}
             {isLoading &&

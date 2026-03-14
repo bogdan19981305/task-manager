@@ -4,14 +4,18 @@ export interface Task {
   id: string;
   title: string;
   content: string | null;
-  status: TaskStatus;
+  status: (typeof TaskStatusValues)[keyof typeof TaskStatusValues];
   creator?: TaskUser;
   assignee?: TaskUser;
   createdAt: string;
   updatedAt: string;
 }
 
-export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
+export const TaskStatusValues = {
+  TODO: "TODO" as const,
+  IN_PROGRESS: "IN_PROGRESS" as const,
+  DONE: "DONE" as const,
+} as const;
 
 export interface TaskUser {
   id: number;
