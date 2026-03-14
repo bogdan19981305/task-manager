@@ -11,16 +11,17 @@ import {
 } from "@/components/ui/table";
 import { useTasks } from "@/features/tasks/model/use-tasks";
 import { useState } from "react";
-import TasksPagination from "./tasks-paginatioon";
 import TasksRow from "./tasks-row";
+import { Pagination } from "@/shared/components";
+import { PAGINATION_PAGE_SIZE_DEFAULT } from "@/config/global";
 
 export default function TasksTable() {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(PAGINATION_PAGE_SIZE_DEFAULT);
   const { data: tasksData, isLoading } = useTasks({ page, limit });
 
   return (
-    <>
+    <div className="mb-10">
       <div className="rounded-sm border bg-card w-[98%] mx-auto mt-10">
         <Table>
           <TableHeader>
@@ -59,13 +60,13 @@ export default function TasksTable() {
         </Table>
       </div>
 
-      <TasksPagination
+      <Pagination
         page={page}
         limit={limit}
-        total={tasksData?.total ?? 0}
+        totalPages={tasksData?.totalPages ?? 0}
         onPageChange={setPage}
         onLimitChange={setLimit}
       />
-    </>
+    </div>
   );
 }
