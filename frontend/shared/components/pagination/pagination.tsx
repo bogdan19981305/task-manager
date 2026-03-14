@@ -52,15 +52,12 @@ const Pagination = ({
       <Field orientation="horizontal" className="w-fit">
         <FieldLabel htmlFor="select-rows-per-page">Rows per page</FieldLabel>
         <Select
-          defaultValue={
-            limit.toString() ?? PAGINATION_PAGE_SIZE_DEFAULT.toString()
-          }
           onValueChange={(value) => onLimitChange(Number(value))}
-          value={limit.toString() ?? PAGINATION_PAGE_SIZE_DEFAULT.toString()}
+          value={limit.toString() ?? PAGINATION_PAGE_SIZE_DEFAULT}
         >
           <SelectTrigger className="w-20" id="select-rows-per-page">
             <SelectValue>
-              {limit.toString() ?? PAGINATION_PAGE_SIZE_DEFAULT.toString()}
+              {limit.toString() ?? PAGINATION_PAGE_SIZE_DEFAULT}
             </SelectValue>
           </SelectTrigger>
           <SelectContent align="start">
