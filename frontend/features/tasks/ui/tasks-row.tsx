@@ -14,7 +14,13 @@ import TasksBadgeTask from "./tasks-badge";
 
 type TaskActionType = "start" | "pause" | "complete" | "delete" | "view";
 
-const TasksRow = ({ task, onDelete }: { task: Task; onDelete: () => void }) => {
+interface TasksRowProps {
+  task: Task;
+  onDelete: () => void;
+  onStart: () => void;
+}
+
+const TasksRow = ({ task, onDelete, onStart }: TasksRowProps) => {
   const [pendingAction, setPendingAction] = useState<{
     id: string;
     type: TaskActionType;
@@ -29,6 +35,11 @@ const TasksRow = ({ task, onDelete }: { task: Task; onDelete: () => void }) => {
     setPendingAction({ id: task.id, type: actionType });
     if (actionType === "delete") {
       await onDelete();
+      setPendingAction(null);
+      return;
+    }
+    if (actionType === "start") {
+      await onStart();
       setPendingAction(null);
       return;
     }

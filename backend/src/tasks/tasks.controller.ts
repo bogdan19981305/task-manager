@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { Auth } from 'src/auth/decorators/auth.decorator';
@@ -43,7 +43,7 @@ export class TasksController {
   }
 
   @Auth()
-  @Put(':id')
+  @Patch(':id')
   updateTask(@Param('id') id: string, @Body() updateTaskDto: TaskUpdateDto) {
     return this.tasksService.updateTask(id, updateTaskDto);
   }
