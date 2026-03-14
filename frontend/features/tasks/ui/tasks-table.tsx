@@ -65,7 +65,10 @@ export default function TasksTable() {
         limit={limit}
         totalPages={tasksData?.totalPages ?? 0}
         onPageChange={setPage}
-        onLimitChange={setLimit}
+        onLimitChange={(limit) => {
+          setLimit(Number(limit));
+          setPage(1);
+        }}
       />
     </div>
   );

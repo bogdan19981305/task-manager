@@ -6,8 +6,8 @@ import {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
-  PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -20,7 +20,6 @@ import {
   PAGINATION_PAGE_SIZE_DEFAULT,
   PAGINATION_PAGE_SIZE_OPTIONS,
 } from "@/config/global";
-import { cn } from "@/lib/utils";
 
 type PaginationProps = {
   page: number;
@@ -37,13 +36,19 @@ const Pagination = ({
   onPageChange,
   onLimitChange,
 }: PaginationProps) => {
-  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
-
   const isFirstPage = page === 1;
   const isLastPage = page === totalPages;
+  const isSinglePage = totalPages === 1;
+
+  if (!totalPages) {
+    return null;
+  }
 
   return (
     <div className="flex items-center justify-end gap-4 w-[98%] mx-auto mt-10 flex-wrap mr-5">
+      <p className="text-sm text-muted-foreground">
+        Page {page} of {totalPages}
+      </p>
       <Field orientation="horizontal" className="w-fit">
         <FieldLabel htmlFor="select-rows-per-page">Rows per page</FieldLabel>
         <Select
@@ -69,35 +74,44 @@ const Pagination = ({
           </SelectContent>
         </Select>
       </Field>
-      <UiPagination className="mx-0 w-auto">
-        {!isFirstPage && (
-          <PaginationPrevious onClick={() => onPageChange(page - 1)}>
-            <PaginationLink className="cursor-pointer" isActive={!isFirstPage}>
+      {!isSinglePage && (
+        <UiPagination className="mx-0 w-auto">
+          <PaginationContent className="flex items-center justify-center gap-2">
+            <PaginationPrevious
+              className={cn(
+                "cursor-pointer",
+                isFirstPage && "opacity-50 pointer-events-none",
+              )}
+              onClick={() => onPageChange(page - 1)}
+            >
               Previous
-            </PaginationLink>
-          </PaginationPrevious>
-        )}
-        <PaginationEllipsis />
-        <PaginationContent className="flex items-center justify-center gap-2">
-          {pages.map((pageItem) => (
-            <PaginationItem key={pageItem}>
-              <PaginationLink
-                isActive={pageItem === page}
-                onClick={() => onPageChange(pageItem)}
-              >
-                {pageItem}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-          {!isLastPage && (
-            <PaginationNext onClick={() => onPageChange(page + 1)}>
-              <PaginationLink className="cursor-pointer" isActive={!isLastPage}>
-                Next
-              </PaginationLink>
+            </PaginationPrevious>
+            {!isFirstPage && (
+              <PaginationItem>
+                <PaginationLink onClick={() => onPageChange(1)}>
+                  1
+                </PaginationLink>
+              </PaginationItem>
+            )}
+            {!isLastPage && (
+              <PaginationItem>
+                <PaginationLink onClick={() => onPageChange(totalPages)}>
+                  {totalPages}
+                </PaginationLink>
+              </PaginationItem>
+            )}
+            <PaginationNext
+              className={cn(
+                "cursor-pointer",
+                isLastPage && "opacity-50 pointer-events-none",
+              )}
+              onClick={() => onPageChange(page + 1)}
+            >
+              Next
             </PaginationNext>
-          )}
-        </PaginationContent>
-      </UiPagination>
+          </PaginationContent>
+        </UiPagination>
+      )}
     </div>
   );
 };
