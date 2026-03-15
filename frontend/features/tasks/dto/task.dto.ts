@@ -4,7 +4,7 @@ export interface Task {
   id: string;
   title: string;
   content: string | null;
-  status: (typeof TaskStatusValues)[keyof typeof TaskStatusValues];
+  status: TaskStatus;
   creator?: TaskUser;
   assignee?: TaskUser;
   createdAt: string;
@@ -23,3 +23,6 @@ export interface TaskUser {
 }
 
 export type TaskListResponse = PaginatedResponse<Task>;
+
+export type TaskStatus =
+  (typeof TaskStatusValues)[keyof typeof TaskStatusValues];
