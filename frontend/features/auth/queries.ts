@@ -1,5 +1,7 @@
-import { api } from "@/shared/api/api";
 import { useQuery } from "@tanstack/react-query";
+
+import { api } from "@/shared/api/api";
+
 import { MeDto } from "./dto/me.dto";
 
 export function useMe() {

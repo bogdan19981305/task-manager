@@ -1,4 +1,6 @@
 "use client";
+import { usePathname } from "next/navigation";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -15,9 +17,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { RequireAuth } from "@/features/auth/RequireAuth";
 import { useLogout } from "@/features/auth/login/model/use-logout";
-import { usePathname } from "next/navigation";
+import { RequireAuth } from "@/features/auth/RequireAuth";
 
 export default function ProtectedLayout({
   children,

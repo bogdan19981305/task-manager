@@ -1,7 +1,9 @@
-import { api } from "@/shared/api/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+import { api } from "@/shared/api/api";
+
 import { RegisterDto } from "./schema";
 
 export function useRegister() {

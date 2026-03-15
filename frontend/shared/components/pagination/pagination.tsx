@@ -2,12 +2,11 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Pagination as UiPagination,
   PaginationContent,
-  PaginationLink,
   PaginationItem,
-  PaginationPrevious,
+  PaginationLink,
   PaginationNext,
+  PaginationPrevious,
 } from "@/components/ui/pagination";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   PAGINATION_PAGE_SIZE_DEFAULT,
   PAGINATION_PAGE_SIZE_OPTIONS,
 } from "@/config/global";
+import { cn } from "@/lib/utils";
 
 type PaginationProps = {
   page: number;

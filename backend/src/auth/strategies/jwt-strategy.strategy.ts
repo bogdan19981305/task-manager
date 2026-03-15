@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import { AUTH_COOKIES } from '../constants/auth.constants';
 
 type JwtPayload = { userId: number; email: string };

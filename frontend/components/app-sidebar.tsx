@@ -1,3 +1,7 @@
+import { Gamepad } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import {
   Sidebar,
   SidebarContent,
@@ -11,9 +15,6 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Gamepad } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 const data = {
   navMain: [

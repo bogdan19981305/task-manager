@@ -1,8 +1,9 @@
 "use client";
 
-import { useMe } from "@/features/auth/queries";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
+import { useMe } from "@/features/auth/queries";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const router = useRouter();
