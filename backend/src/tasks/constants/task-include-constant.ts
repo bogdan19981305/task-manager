@@ -1,14 +1,9 @@
+import { USER_SELECT_CONSTANT } from 'src/users/constants/user-select.constant';
 export const TASK_INCLUDE_CONSTANT = {
   creator: {
-    select: {
-      id: true,
-      name: true,
-    },
+    select: USER_SELECT_CONSTANT,
   },
   assignee: {
-    select: {
-      id: true,
-      name: true,
-    },
+    select: USER_SELECT_CONSTANT,
   },
 };
