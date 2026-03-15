@@ -1,8 +1,10 @@
 "use client";
 
+import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -14,11 +16,13 @@ import {
 } from "@/components/ui/table";
 import { PAGINATION_PAGE_SIZE_DEFAULT } from "@/config/global";
 import { useTasks } from "@/features/tasks/model/use-tasks";
+import { cn } from "@/lib/utils";
 import { Pagination } from "@/shared/components";
 
 import { TaskStatus, TaskStatusValues } from "../dto/task.dto";
 import { useDeleteTask } from "../model/use-delete";
 import { useUpdateTask } from "../model/use-update-task";
+import TaskCreateDrawer from "./task-create-drawer";
 import TasksFilter from "./tasks-filter";
 import TasksRow from "./tasks-row";
 
@@ -26,7 +30,7 @@ export default function TasksTable() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGINATION_PAGE_SIZE_DEFAULT);
   const [status, setStatus] = useState<TaskStatus | null>(null);
-
+  const [openCreateDrawer, setOpenCreateDrawer] = useState(false);
   const { data: tasksData, isLoading } = useTasks({ page, limit, status });
 
   const { mutate: deleteTask } = useDeleteTask({
@@ -54,6 +58,24 @@ export default function TasksTable() {
 
   return (
     <div className="mb-10">
+      <div className="flex justify-between items-center p-4">
+        <h1 className="text-2xl font-bold">Tasks</h1>
+        <Button
+          className={cn(
+            "cursor-pointer",
+            "bg-primary",
+            "text-primary-foreground",
+            "hover:bg-transparent",
+            "hover:text-primary",
+            "hover:border-primary",
+          )}
+          variant="default"
+          onClick={() => setOpenCreateDrawer(true)}
+        >
+          <PlusIcon className="size-4" />
+          Create task
+        </Button>
+      </div>
       <div className="rounded-sm border bg-card w-[98%] mx-auto mt-10">
         <TasksFilter setStatus={changeStatus} status={status} />
         <Table>
@@ -113,6 +135,7 @@ export default function TasksTable() {
           setPage(1);
         }}
       />
+      <TaskCreateDrawer open={openCreateDrawer} setOpen={setOpenCreateDrawer} />
     </div>
   );
 }

@@ -18,7 +18,6 @@ interface TasksFilterProps {
 const TasksFilter = ({ setStatus, status }: TasksFilterProps) => {
   return (
     <div className="px-4 py-2 mt-2">
-      <h4 className="text-md font-medium mb-4">Filter by status</h4>
       <Tabs defaultValue="preview" value={status ?? "all"}>
         <TabsList className="d-flex gap-2">
           <TabsTrigger
@@ -73,6 +72,7 @@ const TasksFilter = ({ setStatus, status }: TasksFilterProps) => {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+      <div className="h-px w-full bg-border my-4" />
     </div>
   );
 };

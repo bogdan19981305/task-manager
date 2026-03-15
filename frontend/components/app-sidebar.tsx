@@ -1,4 +1,4 @@
-import { Gamepad } from "lucide-react";
+import { Gamepad, HomeIcon, ListIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,25 +16,21 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const data = {
+interface SidebarItem {
+  title: string;
+  url: string;
+  items?: SidebarItem[];
+  icon?: React.ReactNode;
+}
+
+interface DataToRender {
+  navMain: SidebarItem[];
+}
+
+const data: DataToRender = {
   navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-    },
-    {
-      title: "Tasks",
-      items: [
-        {
-          title: "All tasks",
-          url: "/tasks",
-        },
-        {
-          title: "Create task",
-          url: "/tasks/create",
-        },
-      ],
-    },
+    { title: "Dashboard", url: "/dashboard", icon: <HomeIcon /> },
+    { title: "Tasks", url: "/tasks", icon: <ListIcon /> },
   ],
 };
 
@@ -66,6 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={item.url === pathname}>
                   <Link href={item.url ?? ""} className="font-medium">
+                    {item?.icon && <div className="size-4">{item.icon}</div>}
                     {item.title}
                   </Link>
                 </SidebarMenuButton>
