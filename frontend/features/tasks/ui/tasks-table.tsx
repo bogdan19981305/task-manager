@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -9,15 +12,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTasks } from "@/features/tasks/model/use-tasks";
-import { useState } from "react";
-import TasksRow from "./tasks-row";
-import { Pagination } from "@/shared/components";
 import { PAGINATION_PAGE_SIZE_DEFAULT } from "@/config/global";
+import { useTasks } from "@/features/tasks/model/use-tasks";
+import { Pagination } from "@/shared/components";
+
+import { TaskStatusValues } from "../dto/task.dto";
 import { useDeleteTask } from "../model/use-delete";
-import { toast } from "sonner";
 import { useUpdateTask } from "../model/use-update-task";
-import { TaskStatus, TaskStatusValues } from "../dto/task.dto";
+import TasksFilter from "./tasks-filter";
+import TasksRow from "./tasks-row";
 
 export default function TasksTable() {
   const [page, setPage] = useState(1);
@@ -45,6 +48,7 @@ export default function TasksTable() {
   return (
     <div className="mb-10">
       <div className="rounded-sm border bg-card w-[98%] mx-auto mt-10">
+        <TasksFilter />
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b">

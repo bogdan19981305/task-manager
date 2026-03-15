@@ -10,12 +10,13 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { Request, Response } from 'express';
+
 import { AuthService } from './auth.service';
 import {
   ACCESS_TTL_MS,
   AUTH_COOKIES,
-  REFRESH_TTL_MS,
   buildCookieOptions,
+  REFRESH_TTL_MS,
 } from './constants/auth.constants';
 import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';

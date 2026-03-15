@@ -12,6 +12,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { UserEntity } from 'src/auth/entities/user.entity';
 import { Task } from 'src/generated/prisma/client';
+
 import { TaskCreateDto } from './dto/task-create.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
 import { TaskUpdateDto } from './dto/task-update.dto';

@@ -1,4 +1,7 @@
 "use client";
+import { FileTextIcon, Loader2, PlayIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import {
@@ -7,8 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { FileTextIcon, Loader2, PlayIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
+
 import { Task } from "../dto/task.dto";
 import TasksBadgeTask from "./tasks-badge";
 

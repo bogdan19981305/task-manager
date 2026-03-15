@@ -1,6 +1,8 @@
-import { api } from "@/shared/api/api";
 import { useMutation } from "@tanstack/react-query";
+
+import { api } from "@/shared/api/api";
 import { queryClient } from "@/shared/api/query-client";
+
 import { Task, TaskListResponse } from "../dto/task.dto";
 
 type UseDeleteTaskOptions = {
