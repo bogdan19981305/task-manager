@@ -44,7 +44,7 @@ export class AuthService {
       select: { id: true, email: true, name: true },
     });
 
-    const signPayload = { userId: user.id, email: user.email };
+    const signPayload = { userId: user.id, email: user.email || '' };
     const accessToken = this.signAccessToken(signPayload);
     const refreshToken = this.signRefreshToken(signPayload);
 
@@ -71,7 +71,7 @@ export class AuthService {
     });
   }
 
-  async loginWithGoogle(user: UserEntity) {
+  async loginWithThirdParty(user: UserEntity) {
     const payload = { userId: user.id, email: user.email };
 
     const accessToken = this.signAccessToken(payload);
@@ -105,7 +105,7 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const payload = { userId: user.id, email: user.email };
+    const payload = { userId: user.id, email: user.email || '' };
 
     const accessToken = this.signAccessToken(payload);
     const refreshToken = this.signRefreshToken(payload);
@@ -137,7 +137,7 @@ export class AuthService {
     const ok = await bcryptjs.compare(refreshToken, user.refreshToken);
     if (!ok) throw new UnauthorizedException('Invalid refresh');
 
-    const payload = { userId: user.id, email: user.email };
+    const payload = { userId: user.id, email: user.email || '' };
 
     const newAccessToken = this.signAccessToken(payload);
     const newRefreshToken = this.signRefreshToken(payload);

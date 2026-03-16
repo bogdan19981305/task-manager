@@ -44,10 +44,37 @@ export class AuthController {
     );
   }
 
+  @ApiOperation({ summary: 'Login with GitHub' })
+  @ApiResponse({ status: 302, description: 'Redirect to frontend' })
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  githubAuth() {}
+
+  @ApiOperation({ summary: 'GitHub callback' })
+  @ApiResponse({ status: 302, description: 'Redirect to frontend' })
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = req.user as unknown as UserEntity;
+    const { accessToken, refreshToken } =
+      await this.authService.loginWithThirdParty(user);
+    this.setAuthCookies(res, accessToken, refreshToken);
+    return res.redirect(
+      this.configService.getOrThrow('FRONTEND_URL') + '/tasks',
+    );
+  }
+
+  @ApiOperation({ summary: 'Login with Google' })
+  @ApiResponse({ status: 302, description: 'Redirect to frontend' })
   @Get('google')
   @UseGuards(AuthGuard('google'))
   googleAuth() {}
 
+  @ApiOperation({ summary: 'Google callback' })
+  @ApiResponse({ status: 302, description: 'Redirect to frontend' })
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(
@@ -56,7 +83,7 @@ export class AuthController {
   ) {
     const user = req.user as unknown as UserEntity;
     const { accessToken, refreshToken } =
-      await this.authService.loginWithGoogle(user);
+      await this.authService.loginWithThirdParty(user);
     this.setAuthCookies(res, accessToken, refreshToken);
     return res.redirect(
       this.configService.getOrThrow('FRONTEND_URL') + '/tasks',

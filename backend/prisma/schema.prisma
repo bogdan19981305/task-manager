@@ -11,9 +11,10 @@ datasource db {
 
 model User {
   id    Int     @default(autoincrement()) @id
-  email String  @unique
+  email String?  @unique
   name  String?
   googleId String? @unique @map("google_id")
+  githubId String? @unique @map("github_id")
   passwordHash String? @map("password_hash")
   refreshToken String? @map("refresh_token")
   createdAt DateTime @default(now()) @map("created_at")
