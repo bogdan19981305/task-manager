@@ -45,16 +45,15 @@ const TasksRow = ({ task, onDelete, onStart }: TasksRowProps) => {
     setPendingAction({ id: task.id, type: actionType });
     if (actionType === "delete") {
       await onDelete();
-      setPendingAction(null);
-      return;
     }
     if (actionType === "start") {
       await onStart();
-      setPendingAction(null);
-      return;
     }
     if (actionType === "edit") {
       router.push(`/tasks?editId=${task.id}`);
+    }
+    if (actionType === "view") {
+      router.push(`/tasks?viewId=${task.id}`);
     }
     setPendingAction(null);
   };
