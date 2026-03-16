@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
@@ -41,6 +42,12 @@ export class AuthController {
     );
   }
 
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   @Post('register')
   async register(
     @Body() registerDto: RegisterDto,
@@ -52,6 +59,11 @@ export class AuthController {
     return { user: { email, name } };
   }
 
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiResponse({ status: 200, description: 'User logged in successfully' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
@@ -63,6 +75,10 @@ export class AuthController {
     return { user: { email: user.email, name: user.name } };
   }
 
+  @ApiOperation({ summary: 'Refresh a token' })
+  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   @Post('refresh')
   async refresh(
     @Req() req: Request,
@@ -85,6 +101,10 @@ export class AuthController {
     return { ok: true };
   }
 
+  @ApiOperation({ summary: 'Logout a user' })
+  @ApiResponse({ status: 200, description: 'User logged out successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   @Post('logout')
   @Auth()
   async logout(
@@ -99,6 +119,10 @@ export class AuthController {
     return { ok: true };
   }
 
+  @ApiOperation({ summary: 'Get the current user' })
+  @ApiResponse({ status: 200, description: 'User fetched successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   @Get('me')
   @Auth()
   me(@CurrentUser() user: UserEntity) {
