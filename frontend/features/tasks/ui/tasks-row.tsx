@@ -1,5 +1,12 @@
 "use client";
-import { FileTextIcon, Loader2, PlayIcon, Trash2Icon } from "lucide-react";
+import {
+  FileTextIcon,
+  Loader2,
+  PencilIcon,
+  PlayIcon,
+  Trash2Icon,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,7 +21,7 @@ import {
 import { Task } from "../dto/task.dto";
 import TasksBadgeTask from "./tasks-badge";
 
-type TaskActionType = "start" | "pause" | "complete" | "delete" | "view";
+type TaskActionType = "start" | "delete" | "view" | "edit";
 
 interface TasksRowProps {
   task: Task;
@@ -23,6 +30,7 @@ interface TasksRowProps {
 }
 
 const TasksRow = ({ task, onDelete, onStart }: TasksRowProps) => {
+  const router = useRouter();
   const [pendingAction, setPendingAction] = useState<{
     id: string;
     type: TaskActionType;
@@ -37,14 +45,17 @@ const TasksRow = ({ task, onDelete, onStart }: TasksRowProps) => {
     setPendingAction({ id: task.id, type: actionType });
     if (actionType === "delete") {
       await onDelete();
-      setPendingAction(null);
-      return;
     }
     if (actionType === "start") {
       await onStart();
-      setPendingAction(null);
-      return;
     }
+    if (actionType === "edit") {
+      router.push(`/tasks?editId=${task.id}`);
+    }
+    if (actionType === "view") {
+      router.push(`/tasks?viewId=${task.id}`);
+    }
+    setPendingAction(null);
   };
 
   const busy = isTaskBusy(task.id);
@@ -97,6 +108,21 @@ const TasksRow = ({ task, onDelete, onStart }: TasksRowProps) => {
                 <TooltipContent>Start</TooltipContent>
               </Tooltip>
             )}
+            <Tooltip>
+              <TooltipTrigger asChild className="cursor-pointer">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleAction(task, "edit")}
+                  disabled={busy}
+                  aria-label="View details"
+                >
+                  <PencilIcon className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Edit</TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild className="cursor-pointer">
                 <Button
