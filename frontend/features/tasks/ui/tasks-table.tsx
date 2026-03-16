@@ -1,6 +1,7 @@
 "use client";
 
 import { PlusIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,7 +23,7 @@ import { Pagination } from "@/shared/components";
 import { TaskStatus, TaskStatusValues } from "../dto/task.dto";
 import { useDeleteTask } from "../model/use-delete";
 import { useUpdateTask } from "../model/use-update-task";
-import TaskCreateDrawer from "./task-create-drawer";
+import TaskDrawer from "./task-drawer";
 import TasksFilter from "./tasks-filter";
 import TasksRow from "./tasks-row";
 
@@ -32,6 +33,11 @@ export default function TasksTable() {
   const [status, setStatus] = useState<TaskStatus | null>(null);
   const [openCreateDrawer, setOpenCreateDrawer] = useState(false);
   const { data: tasksData, isLoading } = useTasks({ page, limit, status });
+
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("editId");
+
+  console.log(editId);
 
   const { mutate: deleteTask } = useDeleteTask({
     onSuccess: () => {
@@ -135,7 +141,18 @@ export default function TasksTable() {
           setPage(1);
         }}
       />
-      <TaskCreateDrawer open={openCreateDrawer} setOpen={setOpenCreateDrawer} />
+      <TaskDrawer
+        open={openCreateDrawer}
+        setOpen={setOpenCreateDrawer}
+        mode="create"
+        taskId={null}
+      />
+      <TaskDrawer
+        open={!!editId}
+        setOpen={() => {}}
+        mode="edit"
+        taskId={editId}
+      />
     </div>
   );
 }
