@@ -27,7 +27,7 @@ export function useDeleteTask(options?: UseDeleteTaskOptions) {
       queryClient.setQueriesData(
         { queryKey: ["tasks"] },
         (old: TaskListResponse | undefined) => {
-          if (!old) return old;
+          if (!old || !old.content) return old;
           return {
             ...old,
             content: old.content.filter((task) => task.id !== taskId),

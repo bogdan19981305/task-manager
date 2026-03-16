@@ -11,6 +11,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ACCESS_TTL_MS, REFRESH_TTL_MS } from './constants/auth.constants';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -70,12 +71,31 @@ export class AuthService {
     });
   }
 
+  async loginWithGoogle(user: UserEntity) {
+    const payload = { userId: user.id, email: user.email };
+
+    const accessToken = this.signAccessToken(payload);
+    const refreshToken = this.signRefreshToken(payload);
+
+    await this.setRefreshTokenHash(user.id, refreshToken);
+
+    return {
+      user: { id: user.id, email: user.email, name: user.name },
+      accessToken,
+      refreshToken,
+    };
+  }
+
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email.toLowerCase() },
     });
 
     if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Please login with Google');
+    }
 
     const isPasswordValid = await bcryptjs.compare(
       loginDto.password,
