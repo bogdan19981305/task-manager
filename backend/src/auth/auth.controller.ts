@@ -6,9 +6,11 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 
@@ -39,6 +41,25 @@ export class AuthController {
       AUTH_COOKIES.refresh,
       refresh,
       buildCookieOptions(REFRESH_TTL_MS),
+    );
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {}
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = req.user as unknown as UserEntity;
+    const { accessToken, refreshToken } =
+      await this.authService.loginWithGoogle(user);
+    this.setAuthCookies(res, accessToken, refreshToken);
+    return res.redirect(
+      this.configService.getOrThrow('FRONTEND_URL') + '/tasks',
     );
   }
 
