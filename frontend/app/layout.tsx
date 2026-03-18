@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} dark`}>
         <Providers>{children}</Providers>
         <Toaster theme="dark" position="top-right" richColors />
+        <SpeedInsights />
       </body>
     </html>
   );
