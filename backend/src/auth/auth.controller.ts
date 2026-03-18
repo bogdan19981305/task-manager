@@ -161,8 +161,8 @@ export class AuthController {
   ) {
     await this.authService.logout(user.id);
 
-    res.clearCookie(AUTH_COOKIES.access, { path: '/' });
-    res.clearCookie(AUTH_COOKIES.refresh, { path: '/' });
+    res.clearCookie(AUTH_COOKIES.access, buildCookieOptions(0, '/'));
+    res.clearCookie(AUTH_COOKIES.refresh, buildCookieOptions(0, '/'));
 
     return { ok: true };
   }
