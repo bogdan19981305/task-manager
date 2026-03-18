@@ -9,8 +9,8 @@ export const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 export function buildCookieOptions(maxAge: number) {
   return {
     httpOnly: true,
-    secure: false, // true in production (https)
-    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
     maxAge,
   };
