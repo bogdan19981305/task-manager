@@ -19,7 +19,7 @@ model User {
   refreshToken String? @map("refresh_token")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
+  role      Role    @default(USER)
   createdTasks   Task[] @relation("CreatedTasks")
   assignedTasks  Task[] @relation("AssignedTasks")
 
@@ -48,4 +48,9 @@ enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+}
+
+enum Role {
+  ADMIN
+  USER
 }

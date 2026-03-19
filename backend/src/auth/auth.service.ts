@@ -72,7 +72,7 @@ export class AuthService {
   }
 
   async loginWithThirdParty(user: UserEntity) {
-    const payload = { userId: user.id, email: user.email };
+    const payload = { userId: user.id, email: user.email, role: user.role };
 
     const accessToken = this.signAccessToken(payload);
     const refreshToken = this.signRefreshToken(payload);
@@ -80,7 +80,12 @@ export class AuthService {
     await this.setRefreshTokenHash(user.id, refreshToken);
 
     return {
-      user: { id: user.id, email: user.email, name: user.name },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
       accessToken,
       refreshToken,
     };
@@ -105,7 +110,11 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const payload = { userId: user.id, email: user.email || '' };
+    const payload = {
+      userId: user.id,
+      email: user.email || '',
+      role: user.role,
+    };
 
     const accessToken = this.signAccessToken(payload);
     const refreshToken = this.signRefreshToken(payload);
@@ -113,7 +122,12 @@ export class AuthService {
     await this.setRefreshTokenHash(user.id, refreshToken);
 
     return {
-      user: { id: user.id, email: user.email, name: user.name },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
       accessToken,
       refreshToken,
     };
@@ -129,7 +143,7 @@ export class AuthService {
   async refresh(userId: number, refreshToken: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, refreshToken: true },
+      select: { id: true, email: true, refreshToken: true, role: true },
     });
 
     if (!user?.refreshToken) throw new UnauthorizedException('No refresh');
@@ -137,7 +151,11 @@ export class AuthService {
     const ok = await bcryptjs.compare(refreshToken, user.refreshToken);
     if (!ok) throw new UnauthorizedException('Invalid refresh');
 
-    const payload = { userId: user.id, email: user.email || '' };
+    const payload = {
+      userId: user.id,
+      email: user.email || '',
+      role: user.role,
+    };
 
     const newAccessToken = this.signAccessToken(payload);
     const newRefreshToken = this.signRefreshToken(payload);

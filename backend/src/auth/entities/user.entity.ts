@@ -1,4 +1,5 @@
 import { Exclude, Expose } from 'class-transformer';
+import { Role } from 'src/generated/prisma/enums';
 
 export class UserEntity {
   @Expose()
@@ -12,6 +13,9 @@ export class UserEntity {
 
   @Exclude()
   passwordHash?: string;
+
+  @Expose()
+  role: Role;
 
   @Exclude()
   refreshTokenHash?: string;
