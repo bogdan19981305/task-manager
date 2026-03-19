@@ -13,6 +13,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { UserEntity } from 'src/auth/entities/user.entity';
 import { Task } from 'src/generated/prisma/client';
+import { Role } from 'src/generated/prisma/enums';
 
 import { TaskCreateDto } from './dto/task-create.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
@@ -82,7 +83,7 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Task not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @ApiParam({ name: 'id', description: 'The id of the task', type: String })
-  @Auth()
+  @Auth(Role.ADMIN)
   @Delete(':id')
   deleteTask(@Param('id') id: string) {
     return this.tasksService.deleteTask(id);
