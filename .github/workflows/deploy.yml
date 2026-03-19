@@ -19,6 +19,7 @@ jobs:
             cd ~/task-manager
             git pull origin main
             make prod-build
+            docker image prune -f
 
       - name: Send Telegram Notification (Success)
         if: success()
