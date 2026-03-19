@@ -18,5 +18,8 @@
     "javascriptreact",
     "typescript",
     "typescriptreact"
-  ]
+  ],
+  "files.exclude": {
+    "**/.git": false
+  }
 }
