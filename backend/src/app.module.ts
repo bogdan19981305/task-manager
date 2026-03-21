@@ -1,9 +1,5 @@
-import KeyvRedis from '@keyv/redis';
-import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheableMemory } from 'cacheable';
-import { Keyv } from 'keyv';
+import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,21 +16,6 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-    }),
-    CacheModule.registerAsync({
-      isGlobal: true,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        stores: [
-          new Keyv({
-            store: new CacheableMemory({
-              ttl: 60000,
-              lruSize: 5000,
-            }),
-          }),
-          new KeyvRedis(config.getOrThrow('REDIS_URL'), {}),
-        ],
-      }),
     }),
     RedisModule,
     TasksModule,

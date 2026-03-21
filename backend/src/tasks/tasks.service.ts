@@ -1,10 +1,14 @@
-import { Cache } from '@nestjs/cache-manager';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { RedisService } from 'src/common/redis/redis.service';
 import { Task } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginatedResponse } from 'src/types/paginated-response';
 
-import { GET_TASKS_CACHE_KEY } from './constants/redis.constant';
+import {
+  ALL_TASK_CACHE_KEY,
+  GET_TASKS_CACHE_KEY,
+  TASK_TTL,
+} from './constants/redis.constant';
 import { TASK_INCLUDE_CONSTANT } from './constants/task-include-constant';
 import { TaskCreateDto } from './dto/task-create.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
@@ -25,10 +29,12 @@ export class TasksService {
       },
     });
 
+    await this.redisService.deleteKeysByPattern(ALL_TASK_CACHE_KEY);
+
     return task;
   }
 
-  async getTasks(taskQueryDto: TaskQueryDto) {
+  async getTasks(taskQueryDto: TaskQueryDto): Promise<PaginatedResponse<Task>> {
     const { status, assigneeId, creatorId, page, limit } = taskQueryDto;
 
     const where = {
@@ -37,18 +43,12 @@ export class TasksService {
       ...(creatorId && { creatorId }),
     };
 
-    const cachedTasks = await this.redisService.get(
-      GET_TASKS_CACHE_KEY(taskQueryDto),
-    );
+    const cacheKey = GET_TASKS_CACHE_KEY(taskQueryDto);
+    const cacheKeys =
+      await this.redisService.get<PaginatedResponse<Task>>(cacheKey);
 
-    if (cachedTasks) {
-      return cachedTasks as {
-        content: Task[];
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-      };
+    if (cacheKeys) {
+      return cacheKeys;
     }
 
     const [tasks, total] = await Promise.all([
@@ -62,13 +62,17 @@ export class TasksService {
       this.prisma.task.count({ where }),
     ]);
 
-    await this.redisService.set(GET_TASKS_CACHE_KEY(taskQueryDto), {
-      content: tasks,
-      total,
-      page: page ?? 1,
-      limit: limit ?? 10,
-      totalPages: Math.ceil(total / (limit ?? 10)),
-    });
+    await this.redisService.set(
+      cacheKey,
+      {
+        content: tasks,
+        total,
+        page: page ?? 1,
+        limit: limit ?? 10,
+        totalPages: Math.ceil(total / (limit ?? 10)),
+      },
+      TASK_TTL,
+    );
 
     return {
       content: tasks,
@@ -117,6 +121,7 @@ export class TasksService {
       data: updateTaskDto,
       include: TASK_INCLUDE_CONSTANT,
     });
+    await this.redisService.deleteKeysByPattern(ALL_TASK_CACHE_KEY);
 
     return updatedTask;
   }
@@ -131,9 +136,12 @@ export class TasksService {
       throw new NotFoundException('Task not found');
     }
 
-    return this.prisma.task.delete({
+    const deletedTask = await this.prisma.task.delete({
       where: { id: task.id },
       include: TASK_INCLUDE_CONSTANT,
     });
+    await this.redisService.deleteKeysByPattern(ALL_TASK_CACHE_KEY);
+
+    return deletedTask;
   }
 }

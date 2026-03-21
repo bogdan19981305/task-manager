@@ -7,7 +7,8 @@ export class RedisService {
   constructor(private readonly configService: ConfigService) {
     this.client = new Redis({
       password: this.configService.getOrThrow<string>('REDIS_PASSWORD'),
-      host: this.configService.getOrThrow<string>('REDIS_URL'),
+      host: this.configService.getOrThrow<string>('REDIS_HOST'),
+      port: this.configService.getOrThrow<number>('REDIS_PORT'),
     });
   }
   async get<T = any>(key: string): Promise<T | null> {
@@ -24,5 +25,26 @@ export class RedisService {
   }
   async del(key: string) {
     await this.client.del(key);
+  }
+
+  getKeysByPattern(key: string) {
+    return new Promise<string[]>((resolve) => {
+      const stream = this.client.scanStream({
+        match: key,
+        count: 100,
+      });
+
+      const keys: string[] = [];
+      stream.on('data', (resultKeys) => {
+        keys.push(...resultKeys);
+      });
+      stream.on('end', () => resolve(keys));
+    });
+  }
+
+  async deleteKeysByPattern(key: string) {
+    const keys = await this.getKeysByPattern(key);
+    if (keys.length === 0) return;
+    await this.client.unlink(keys);
   }
 }

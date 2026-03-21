@@ -12,11 +12,11 @@ config:
 	docker compose config
 
 prod:
-	docker compose -f docker-compose.prod.yml up -d
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker up -d
 	docker system prune -f
 
 prod-build:
-	docker compose -f docker-compose.prod.yml up --build -d
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker up --build -d
 	docker system prune -f
 
 down:

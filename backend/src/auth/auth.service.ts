@@ -1,13 +1,12 @@
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import ms from 'ms';
+import { RedisService } from 'src/common/redis/redis.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import {
@@ -24,7 +23,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly redisService: RedisService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -70,7 +69,7 @@ export class AuthService {
 
   private async setRefreshTokenHash(userId: number, refreshToken: string) {
     const hash = await bcryptjs.hash(refreshToken, 10);
-    await this.cacheManager.set(
+    await this.redisService.set(
       REDIS_REFRESH_KEY(userId),
       hash,
       REFRESH_TTL_MS,
@@ -141,7 +140,7 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    await this.cacheManager.del(REDIS_REFRESH_KEY(userId));
+    await this.redisService.del(REDIS_REFRESH_KEY(userId));
   }
 
   async refresh(userId: number, refreshToken: string) {
@@ -152,7 +151,7 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('User not found');
 
-    const cachedRefreshToken = await this.cacheManager.get<string>(
+    const cachedRefreshToken = await this.redisService.get<string>(
       REDIS_REFRESH_KEY(userId),
     );
     if (!cachedRefreshToken)
