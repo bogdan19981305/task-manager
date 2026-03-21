@@ -19,6 +19,7 @@ services:
       - ./backend/.env.docker
     depends_on:
       - postgres
+      - redis
     ports:
       - "3000:3000"
       - "5555:5555"
@@ -26,7 +27,20 @@ services:
       - ./backend:/app
       - backend_node_modules:/app/node_modules
     command: sh -c "pnpm install --force --no-frozen-lockfile && pnpm db:push && pnpm exec nest start --watch"
+  redis:
+    image: redis:7-alpine
+    container_name: task-board-redis
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    command: sh -c "redis-server --requirepass ${REDIS_PASSWORD}"
+    ports:
+      - "6379:6379"
+    restart: always
+    env_file: "./backend/.env.docker"
+    volumes:
+      - redis_data:/data
 
 volumes:
   postgres_data:
   backend_node_modules:
+  redis_data:

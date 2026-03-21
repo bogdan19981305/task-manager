@@ -1,6 +1,10 @@
+import { Cache } from '@nestjs/cache-manager';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { RedisService } from 'src/common/redis/redis.service';
+import { Task } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+import { GET_TASKS_CACHE_KEY } from './constants/redis.constant';
 import { TASK_INCLUDE_CONSTANT } from './constants/task-include-constant';
 import { TaskCreateDto } from './dto/task-create.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
@@ -8,7 +12,10 @@ import { TaskUpdateDto } from './dto/task-update.dto';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async createTask(userId: number, createTaskDto: TaskCreateDto) {
     const task = await this.prisma.task.create({
@@ -30,6 +37,20 @@ export class TasksService {
       ...(creatorId && { creatorId }),
     };
 
+    const cachedTasks = await this.redisService.get(
+      GET_TASKS_CACHE_KEY(taskQueryDto),
+    );
+
+    if (cachedTasks) {
+      return cachedTasks as {
+        content: Task[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      };
+    }
+
     const [tasks, total] = await Promise.all([
       this.prisma.task.findMany({
         where,
@@ -40,6 +61,14 @@ export class TasksService {
       }),
       this.prisma.task.count({ where }),
     ]);
+
+    await this.redisService.set(GET_TASKS_CACHE_KEY(taskQueryDto), {
+      content: tasks,
+      total,
+      page: page ?? 1,
+      limit: limit ?? 10,
+      totalPages: Math.ceil(total / (limit ?? 10)),
+    });
 
     return {
       content: tasks,
@@ -83,11 +112,13 @@ export class TasksService {
       }
     }
 
-    return this.prisma.task.update({
+    const updatedTask = await this.prisma.task.update({
       where: { id: task.id },
       data: updateTaskDto,
       include: TASK_INCLUDE_CONSTANT,
     });
+
+    return updatedTask;
   }
 
   async deleteTask(id: string) {
