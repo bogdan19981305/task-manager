@@ -12,9 +12,12 @@ A production-style fullstack task management application built for learning mode
 - [NestJS](https://nestjs.com/) — Node.js framework
 - [Prisma](https://www.prisma.io/) — ORM
 - [PostgreSQL](https://www.postgresql.org/) — Database
+- [Redis](https://redis.io/) — Caching + refresh token storage (ioredis)
 - [Passport.js](https://www.passportjs.org/) — Authentication (JWT, Google OAuth, GitHub OAuth)
 - [Swagger](https://swagger.io/) — API documentation
 - [Docker](https://www.docker.com/) — Containerization
+- [Helmet](https://helmetjs.github.io/) — Security headers
+- [@nestjs/throttler](https://github.com/nestjs/throttler) — Rate limiting
 
 **Frontend**
 - [Next.js 15](https://nextjs.org/) — React framework
@@ -46,6 +49,11 @@ task-manager/
 - Filter tasks by status (TODO / IN_PROGRESS / DONE)
 - Assign tasks to users
 - Pagination
+- Redis caching for `GET /tasks` with automatic invalidation on mutations
+- Refresh tokens stored in Redis (not in DB)
+- Rate limiting (100 req/min per IP) with Redis storage
+- Security headers via Helmet
+- Role-based access control (ADMIN / USER)
 - Swagger API docs at `/api/docs`
 
 ---
@@ -78,6 +86,9 @@ PORT=3000
 JWT_SECRET=your_secret
 JWT_EXPIRES=1d
 FRONTEND_URL=http://localhost:3001
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
@@ -166,13 +177,18 @@ docker compose -f docker-compose.prod.yml up --build -d
 - [x] GitHub OAuth
 - [x] Tasks CRUD API
 - [x] Users API
+- [x] Role-based access control (ADMIN / USER)
 - [x] Swagger documentation
 - [x] Docker dev + prod configuration
 - [x] Next.js frontend
 - [x] Tasks table with pagination and filters
 - [x] Create / edit / view task drawers
 - [x] Vercel deployment
-- [ ] AWS EC2 deployment
-- [ ] GitHub Actions CI/CD
+- [x] AWS EC2 deployment (Nginx + SSL)
+- [x] GitHub Actions CI/CD
+- [x] Redis — caching + refresh token storage
+- [x] Rate limiting + Helmet
+- [x] Unit tests (Jest) — 23 tests
+- [ ] E2E tests (Supertest)
 - [ ] WebSockets (real-time updates)
-- [ ] Redis
+- [ ] Winston/Pino logging
