@@ -6,6 +6,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     build:
@@ -20,12 +25,22 @@ services:
       - postgres
       - redis
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: sh -c "if [ -d prisma/migrations ] && [ \"$(ls -A prisma/migrations 2>/dev/null)\" ]; then npx prisma migrate deploy; else npx prisma db push; fi && node dist/src/main"
   redis:
     image: redis:7-alpine
     container_name: task-board-redis
     command: sh -c "redis-server --requirepass ${REDIS_PASSWORD}"
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     env_file:
       - backend/.env.prod.docker
     volumes:
