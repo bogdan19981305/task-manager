@@ -6,9 +6,14 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import ms from 'ms';
+import { RedisService } from 'src/common/redis/redis.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { ACCESS_TTL_MS, REFRESH_TTL_MS } from './constants/auth.constants';
+import {
+  ACCESS_TTL_MS,
+  REDIS_REFRESH_KEY,
+  REFRESH_TTL_MS,
+} from './constants/auth.constants';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
 import { UserEntity } from './entities/user.entity';
@@ -18,6 +23,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly redisService: RedisService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -63,12 +69,11 @@ export class AuthService {
 
   private async setRefreshTokenHash(userId: number, refreshToken: string) {
     const hash = await bcryptjs.hash(refreshToken, 10);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        refreshToken: hash,
-      },
-    });
+    await this.redisService.set(
+      REDIS_REFRESH_KEY(userId),
+      hash,
+      REFRESH_TTL_MS,
+    );
   }
 
   async loginWithThirdParty(user: UserEntity) {
@@ -96,10 +101,11 @@ export class AuthService {
       where: { email: loginDto.email.toLowerCase() },
     });
 
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user)
+      throw new UnauthorizedException('Invalid credentials or user not found');
 
     if (!user.passwordHash) {
-      throw new UnauthorizedException('Please login with Google');
+      throw new UnauthorizedException('Please login with Google or GitHub');
     }
 
     const isPasswordValid = await bcryptjs.compare(
@@ -134,22 +140,29 @@ export class AuthService {
   }
 
   async logout(userId: number) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
+    await this.redisService.del(REDIS_REFRESH_KEY(userId));
   }
 
   async refresh(userId: number, refreshToken: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, refreshToken: true, role: true },
+      select: { id: true, email: true, role: true },
     });
 
-    if (!user?.refreshToken) throw new UnauthorizedException('No refresh');
+    if (!user) throw new UnauthorizedException('User not found');
 
-    const ok = await bcryptjs.compare(refreshToken, user.refreshToken);
-    if (!ok) throw new UnauthorizedException('Invalid refresh');
+    const cachedRefreshToken = await this.redisService.get<string>(
+      REDIS_REFRESH_KEY(userId),
+    );
+    if (!cachedRefreshToken)
+      throw new UnauthorizedException('No refresh token found');
+
+    const isRefreshTokenValid = await bcryptjs.compare(
+      refreshToken,
+      cachedRefreshToken,
+    );
+    if (!isRefreshTokenValid)
+      throw new UnauthorizedException('Invalid refresh token');
 
     const payload = {
       userId: user.id,

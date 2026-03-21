@@ -18,8 +18,19 @@ services:
       - "5555:5555"
     depends_on:
       - postgres
+      - redis
     restart: always
     command: sh -c "if [ -d prisma/migrations ] && [ \"$(ls -A prisma/migrations 2>/dev/null)\" ]; then npx prisma migrate deploy; else npx prisma db push; fi && node dist/src/main"
+  redis:
+    image: redis:7-alpine
+    container_name: task-board-redis
+    command: sh -c "redis-server --requirepass ${REDIS_PASSWORD}"
+    restart: always
+    env_file:
+      - backend/.env.prod.docker
+    volumes:
+      - redis_data:/data
 
 volumes:
   postgres_data:
+  redis_data:

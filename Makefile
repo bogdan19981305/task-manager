@@ -1,16 +1,23 @@
 .PHONY: dev dev-build prod prod-build down migrate db-push studio studio-stop studio-status frontend frontend-build frontend-install status
 
 dev:
-	docker compose up
+	docker compose --env-file ./backend/.env.docker up -d
+	docker system prune -f
 
 dev-build:
-	docker compose up --build
+	docker compose --env-file ./backend/.env.docker up --build -d
+	docker system prune -f
+
+config:
+	docker compose config
 
 prod:
-	docker compose -f docker-compose.prod.yml up
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker up -d
+	docker system prune -f
 
 prod-build:
-	docker compose -f docker-compose.prod.yml up --build -d
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker up --build -d
+	docker system prune -f
 
 down:
 	docker compose down

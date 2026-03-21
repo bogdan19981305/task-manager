@@ -16,7 +16,6 @@ model User {
   googleId String? @unique @map("google_id")
   githubId String? @unique @map("github_id")
   passwordHash String? @map("password_hash")
-  refreshToken String? @map("refresh_token")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   role      Role    @default(USER)

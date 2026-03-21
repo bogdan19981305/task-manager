@@ -1,3 +1,4 @@
+"use client";
 import axios, { AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 
@@ -15,15 +16,18 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/refresh")
+      !originalRequest.url?.includes("/auth/refresh") &&
+      !originalRequest.url?.includes("/auth/login")
     ) {
       originalRequest._retry = true;
       try {
         await api.post("/auth/refresh");
         return api(originalRequest);
       } catch {
-        toast.error("Session expired. Please sign in again");
-        window.location.href = "/auth/sign-in";
+        if (!window.location.pathname.includes("/auth/sign-in")) {
+          toast.error("Session expired. Please sign in again");
+          window.location.href = "/auth/sign-in";
+        }
         return Promise.reject(error);
       }
     }
