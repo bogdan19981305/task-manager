@@ -11,6 +11,10 @@ export class RedisService {
       port: this.configService.getOrThrow<number>('REDIS_PORT'),
     });
   }
+
+  getClient(): RedisType {
+    return this.client;
+  }
   async get<T = any>(key: string): Promise<T | null> {
     const data = await this.client.get(key);
     return data ? (JSON.parse(data) as T) : null;

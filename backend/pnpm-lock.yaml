@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@nest-lab/throttler-storage-redis':
+    specifier: ^1.2.0
+    version: 1.2.0(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)(@nestjs/throttler@6.5.0)(ioredis@5.10.1)(reflect-metadata@0.2.2)
   '@nestjs/common':
     specifier: ^11.0.1
     version: 11.1.14(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -29,6 +32,9 @@ dependencies:
   '@nestjs/swagger':
     specifier: ^11.2.6
     version: 11.2.6(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+  '@nestjs/throttler':
+    specifier: ^6.5.0
+    version: 6.5.0(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)(reflect-metadata@0.2.2)
   '@prisma/adapter-pg':
     specifier: ^7.4.2
     version: 7.4.2
@@ -1364,6 +1370,23 @@ packages:
     dev: true
     optional: true
 
+  /@nest-lab/throttler-storage-redis@1.2.0(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)(@nestjs/throttler@6.5.0)(ioredis@5.10.1)(reflect-metadata@0.2.2):
+    resolution: {integrity: sha512-tMkUyo68NCKTR+zILk+EC35SMYBtDPZY2mCj7ZaCietWGVTnuP4zwq9ERYfvU6kJv6h8teNZrC6MJCmY6/dljw==}
+    peerDependencies:
+      '@nestjs/common': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
+      '@nestjs/throttler': '>=6.0.0'
+      ioredis: '>=5.0.0'
+      reflect-metadata: ^0.2.1
+    dependencies:
+      '@nestjs/common': 11.1.14(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.14(@nestjs/common@11.1.14)(@nestjs/platform-express@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/throttler': 6.5.0(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)(reflect-metadata@0.2.2)
+      ioredis: 5.10.1
+      reflect-metadata: 0.2.2
+      tslib: 2.8.1
+    dev: false
+
   /@nestjs/cli@11.0.16(@types/node@22.19.13):
     resolution: {integrity: sha512-P0H+Vcjki6P5160E5QnMt3Q0X5FTg4PZkP99Ig4lm/4JWqfw32j3EXv3YBTJ2DmxLwOQ/IS9F7dzKpMAgzKTGg==}
     engines: {node: '>= 20.11'}
@@ -1588,6 +1611,18 @@ packages:
       '@nestjs/platform-express': 11.1.14(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)
       tslib: 2.8.1
     dev: true
+
+  /@nestjs/throttler@6.5.0(@nestjs/common@11.1.14)(@nestjs/core@11.1.14)(reflect-metadata@0.2.2):
+    resolution: {integrity: sha512-9j0ZRfH0QE1qyrj9JjIRDz5gQLPqq9yVC2nHsrosDVAfI5HHw08/aUAWx9DZLSdQf4HDkmhTTEGLrRFHENvchQ==}
+    peerDependencies:
+      '@nestjs/common': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
+      reflect-metadata: ^0.1.13 || ^0.2.0
+    dependencies:
+      '@nestjs/common': 11.1.14(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.14(@nestjs/common@11.1.14)(@nestjs/platform-express@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata: 0.2.2
+    dev: false
 
   /@noble/hashes@1.8.0:
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
