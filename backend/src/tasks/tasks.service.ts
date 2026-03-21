@@ -66,10 +66,10 @@ export class TasksService {
       cacheKey,
       {
         content: tasks,
-        total,
+        total: total || 0,
         page: page ?? 1,
         limit: limit ?? 10,
-        totalPages: Math.ceil(total / (limit ?? 10)),
+        totalPages: Math.ceil(total / (limit ?? 10)) || 0,
       },
       TASK_TTL,
     );

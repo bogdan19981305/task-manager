@@ -32,6 +32,12 @@ api.interceptors.response.use(
       }
     }
     if (axios.isAxiosError(error)) {
+      if (!error.response) {
+        toast.error(
+          "Network error or server is not responding. Please try again later.",
+        );
+        return Promise.reject(error);
+      }
       toast.error(error.response?.data?.message);
     }
     return Promise.reject(error);
