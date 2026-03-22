@@ -32,7 +32,7 @@ export class AuthService {
     });
 
     if (foundUser) {
-      throw new UnauthorizedException('Email already in use');
+      throw new BadRequestException('Email already in use');
     }
 
     if (registerDto.password !== registerDto.passwordConfirmation) {
