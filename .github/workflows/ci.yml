@@ -26,6 +26,10 @@ jobs:
         run: pnpm install
         working-directory: backend
 
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+        working-directory: backend
+
       - name: Run unit tests
         run: pnpm test
         working-directory: backend
@@ -74,6 +78,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+        working-directory: backend
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
         working-directory: backend
 
       - name: Create test env file
