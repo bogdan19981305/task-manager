@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: backend
+
+      - name: Run unit tests
+        run: pnpm test
+        working-directory: backend
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: backend
+
+      - name: Create test env file
+        working-directory: backend
+        run: |
+          cat > test/.env.test << 'EOF'
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/task_board_test
+          PORT=3001
+          JWT_SECRET=test_secret
+          JWT_EXPIRES=1d
+          FRONTEND_URL=http://localhost:3001
+          NODE_ENV=test
+          GOOGLE_CLIENT_ID=test
+          GOOGLE_CLIENT_SECRET=test
+          GOOGLE_CALLBACK_URL=http://localhost:3001/auth/google/callback
+          GITHUB_CLIENT_ID=test
+          GITHUB_CLIENT_SECRET=test
+          GITHUB_CALLBACK_URL=http://localhost:3001/auth/github/callback
+          REDIS_PASSWORD=
+          REDIS_PORT=6379
+          REDIS_HOST=localhost
+          EOF
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+        working-directory: backend
