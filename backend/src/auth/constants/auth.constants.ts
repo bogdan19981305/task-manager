@@ -19,3 +19,5 @@ export function buildCookieOptions(maxAge: number, path: string = '/') {
     maxAge,
   };
 }
+
+const a: string = 1;
