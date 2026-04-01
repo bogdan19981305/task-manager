@@ -58,9 +58,6 @@ const mockJwtService = {
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let prismaService: PrismaService;
-  let redisService: RedisService;
-  let jwtService: JwtService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -82,9 +79,6 @@ describe('AuthService', () => {
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    redisService = module.get<RedisService>(RedisService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   describe('register', () => {
@@ -97,7 +91,10 @@ describe('AuthService', () => {
     it('should throw an error if the user already exists', async () => {
       mockPrismaService.user.findUnique.mockResolvedValueOnce(mockRegisterUser);
       await expect(authService.register(mockUserRegisterDto)).rejects.toThrow(
-        new UnauthorizedException('Email already in use'),
+        BadRequestException,
+      );
+      await expect(authService.register(mockUserRegisterDto)).rejects.toThrow(
+        'Email already in use',
       );
     });
 
