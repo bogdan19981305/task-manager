@@ -131,6 +131,7 @@ export class AuthController {
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @Post('refresh')
   @HttpCode(200)
+  @Auth()
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
