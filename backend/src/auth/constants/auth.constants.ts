@@ -20,4 +20,4 @@ export function buildCookieOptions(maxAge: number, path: string = '/') {
   };
 }
 
-const a: string = 1;
+const a: array = 1;
