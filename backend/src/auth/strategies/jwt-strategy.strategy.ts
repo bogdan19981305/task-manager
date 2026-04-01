@@ -14,7 +14,7 @@ type JwtPayload = { userId: number; email: string; role: Role };
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly configService: ConfigService,
+    configService: ConfigService,
   ) {
     const secret = configService.getOrThrow<string>('JWT_SECRET');
     super({

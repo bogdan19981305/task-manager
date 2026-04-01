@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -e
+
+(cd frontend && npx tsc --noEmit)
+(cd backend && npx tsc --noEmit)
+
+npx lint-staged
