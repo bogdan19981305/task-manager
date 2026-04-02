@@ -96,7 +96,7 @@ status:
 	CMD=$$(docker inspect -f '{{.Config.Cmd}}' $$BACKEND_ID); \
 	case "$$CMD" in \
 		*"nest start --watch"*) MODE="DEV" ;; \
-		*"node dist/src/main"*) MODE="PROD" ;; \
+		*"node dist/main"*) MODE="PROD" ;; \
 		*) MODE="UNKNOWN" ;; \
 	esac; \
 	NODE_ENV=$$(docker exec $$BACKEND_ID sh -lc 'printf "%s" "$$NODE_ENV"' 2>/dev/null || true); \
