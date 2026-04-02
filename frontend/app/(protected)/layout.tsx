@@ -1,4 +1,5 @@
 "use client";
+
 import { usePathname } from "next/navigation";
 
 import { AppSidebar } from "@/components/app-sidebar";
@@ -20,26 +21,28 @@ import {
 import { useLogout } from "@/features/auth/login/model/use-logout";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 
+function HeaderPageLabel() {
+  const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+  const currentPage = segments[segments.length - 1] ?? "dashboard";
+  const label = currentPage.charAt(0).toUpperCase() + currentPage.slice(1);
+  return <>{label}</>;
+}
+
 export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { mutate: logout } = useLogout();
-  const pathname = usePathname();
-
-  const segments = pathname.split("/").filter(Boolean);
-  const currentPage = segments[segments.length - 1];
-
-  const label = currentPage.charAt(0).toUpperCase() + currentPage.slice(1);
 
   return (
     <RequireAuth>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b w-full">
-            <div className="flex items-center gap-2 px-3 justify-between w-full">
+          <header className="flex h-16 w-full shrink-0 items-center gap-2 border-b">
+            <div className="flex w-full items-center justify-between gap-2 px-3">
               <SidebarTrigger />
               <Separator orientation="vertical" className="mr-2 h-4" />
               <Breadcrumb>
@@ -51,12 +54,14 @@ export default function ProtectedLayout({
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>{label}</BreadcrumbPage>
+                    <BreadcrumbPage>
+                      <HeaderPageLabel />
+                    </BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
               <Button
-                className="cursor-pointer ml-auto"
+                className="ml-auto cursor-pointer"
                 variant="destructive"
                 color="red"
                 size="lg"
