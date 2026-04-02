@@ -1,4 +1,8 @@
-import BlogSection from "@/widgets/landing/blog-section";
+import { Suspense } from "react";
+
+import BlogSection, {
+  BlogSectionSkeleton,
+} from "@/widgets/landing/blog-section";
 import BuiltWithSection from "@/widgets/landing/built-with-section";
 import EverythingNeedSection from "@/widgets/landing/everything-need-section";
 import FaqSection from "@/widgets/landing/faq-section";
@@ -13,7 +17,9 @@ const PublicPage = () => {
       <BuiltWithSection />
       <EverythingNeedSection />
       <SocialProofSection />
-      <BlogSection />
+      <Suspense fallback={<BlogSectionSkeleton />}>
+        <BlogSection />
+      </Suspense>
       <PricingBlock />
       <FaqSection />
     </main>

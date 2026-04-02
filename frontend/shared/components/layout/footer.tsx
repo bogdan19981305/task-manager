@@ -2,12 +2,11 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { FooterScrollReveal } from "@/widgets/landing/animations/scroll-reveal";
+import ContactForm from "@/widgets/public/contact-form";
 
 const FOOTER_COLUMNS = [
   {
@@ -53,12 +52,10 @@ type FooterProps = {
 };
 
 const Footer = ({ className }: FooterProps) => {
-  const handleNewsletterSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-  };
-
   return (
-    <FooterScrollReveal className={cn("bg-black text-white", className)}>
+    <FooterScrollReveal
+      className={cn("bg-background text-foreground", className)}
+    >
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div
           data-reveal
@@ -85,42 +82,32 @@ const Footer = ({ className }: FooterProps) => {
 
         <div
           data-reveal
-          className="mt-16 grid gap-10 md:mt-20 md:grid-cols-2 md:items-end md:gap-12"
+          className="mt-16 grid gap-10 md:mt-20 md:grid-cols-2 md:items-start md:gap-12"
         >
           <div className="max-w-md">
-            <h3 className="text-lg font-semibold tracking-tight">
-              Stay connected
+            <h3 className="text-lg font-semibold tracking-tight text-zinc-50">
+              Get in touch
             </h3>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-base">
-              Subscribe for product updates, tips on running a task board, and
-              occasional release notes.
+            <p className="mt-2 text-sm leading-relaxed text-zinc-400 sm:text-base">
+              Same form as on our contact page—name, email, and message—with
+              validation. We&apos;ll reply by email.
             </p>
-          </div>
-          <form
-            className="flex w-full flex-col gap-3 sm:flex-row sm:items-center"
-            onSubmit={handleNewsletterSubmit}
-          >
-            <Input
-              type="email"
-              name="email"
-              required
-              placeholder="Your email address"
-              autoComplete="email"
-              className="h-11 border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500 focus-visible:ring-zinc-600 sm:min-w-0 sm:flex-1"
-            />
             <Button
-              type="submit"
-              className="h-11 shrink-0 rounded-lg bg-white px-6 text-black hover:bg-zinc-200 sm:w-auto"
+              variant="link"
+              className="mt-4 h-auto p-0 text-zinc-300 underline-offset-4 hover:text-white"
+              asChild
             >
-              Subscribe
+              <Link href="/contact">Full contact page →</Link>
             </Button>
-          </form>
+          </div>
+          <ContactForm
+            idPrefix="footer-"
+            variant="footer"
+            className="w-full md:max-w-none"
+          />
         </div>
 
-        <div
-          data-reveal
-          className="mt-12 border-t border-zinc-800 pt-12"
-        >
+        <div data-reveal className="mt-12 border-t border-zinc-800 pt-12">
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-10">
             {FOOTER_COLUMNS.map((column) => (
               <div key={column.title}>

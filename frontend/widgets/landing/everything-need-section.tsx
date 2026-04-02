@@ -66,7 +66,7 @@ const EverythingNeedSection = () => {
   return (
     <SectionScrollReveal
       intensity="expressive"
-      className="w-full bg-black py-16 text-white sm:py-24"
+      className="w-full bg-background py-16 text-foreground sm:py-24"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="mb-12 text-center text-3xl font-bold tracking-tight text-balance sm:mb-16 sm:text-4xl md:text-5xl">
