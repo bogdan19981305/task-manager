@@ -1,4 +1,4 @@
-.PHONY: dev dev-build prod prod-build down migrate db-push studio studio-stop studio-status frontend frontend-build frontend-install status
+.PHONY: dev dev-build prod prod-build down migrate db-seed db-push studio studio-stop studio-status frontend frontend-build frontend-install status
 
 dev:
 	docker compose --env-file ./backend/.env.docker up -d
@@ -24,6 +24,12 @@ down:
 
 migrate:
 	docker compose exec backend npx prisma migrate dev
+
+db-seed:
+	docker compose exec backend pnpm db:seed
+
+migration-create:
+	docker compose exec backend npx prisma migrate dev --create-only
 
 db-push:
 	docker compose exec backend npx prisma db push

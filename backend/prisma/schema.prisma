@@ -21,7 +21,7 @@ model User {
   role      Role    @default(USER)
   createdTasks   Task[] @relation("CreatedTasks")
   assignedTasks  Task[] @relation("AssignedTasks")
-
+  blogPosts      BlogPost[] @relation("AuthorPosts")
   @@map("users")
 }
 
@@ -37,16 +37,37 @@ model Task {
   assigneeId  Int?
   assignee    User?  @relation("AssignedTasks", fields: [assigneeId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("tasks")
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  excerpt   String?
+  status    BlogPostStatus @default(DRAFT)
+  slug      String @unique
+  authorId  Int @map("author_id")
+  author    User   @relation("AuthorPosts", fields: [authorId], references: [id])
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("blog_posts")
 }
 
 enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
 }
 
 enum Role {

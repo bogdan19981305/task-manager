@@ -7,6 +7,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { BlogModule } from './blog/blog.module';
 import { RedisModule } from './common/redis/redis.module';
 import { RedisService } from './common/redis/redis.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
     }),
     RedisModule,
     TasksModule,
+    BlogModule,
     UsersModule,
     ThrottlerModule.forRootAsync({
       inject: [RedisService],

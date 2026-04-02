@@ -13,8 +13,8 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "lint": "eslint \"{src,apps,libs,test,prisma}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,apps,libs,test,prisma}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -22,6 +22,7 @@
     "test:e2e": "dotenv -e test/.env.test -- jest --config test/jest-e2e.json --runInBand",
     "db:start": "prisma studio",
     "db:push": "prisma db push && prisma generate",
+    "db:seed": "prisma db seed",
     "docker:rebuild": "cd .. && docker compose down && docker volume rm task-manager_backend_node_modules && docker compose up --build"
   },
   "dependencies": {
