@@ -117,6 +117,10 @@ jobs:
           REDIS_PASSWORD=
           REDIS_PORT=6379
           REDIS_HOST=localhost
+          AWS_REGION=us-east-1
+          AWS_ACCESS_KEY_ID=test
+          AWS_SECRET_ACCESS_KEY=test
+          EMAIL_FROM=noreply@example.com
           EOF
 
       - name: Run E2E tests

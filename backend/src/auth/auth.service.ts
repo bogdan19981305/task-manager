@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from 'bcryptjs';
 import ms from 'ms';
 import { RedisService } from 'src/common/redis/redis.service';
+import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import {
@@ -16,7 +17,9 @@ import {
 } from './constants/auth.constants';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
-import { UserEntity } from './entities/user.entity';
+import { JwtSignPayload } from './types/jwt.type';
+import { SessionUserType } from './types/session-user.type';
+import { ThirdPartyAuthUser } from './types/third-party-auth-user.type';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +27,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -47,37 +51,39 @@ export class AuthService {
         name: registerDto.name,
         passwordHash: hashedPassword,
       },
-      select: { id: true, email: true, name: true },
+      select: { id: true, email: true, name: true, role: true },
     });
 
-    const signPayload = { userId: user.id, email: user.email || '' };
-    const accessToken = this.signAccessToken(signPayload);
-    const refreshToken = this.signRefreshToken(signPayload);
+    const session = await this.issueAuthSession(user);
 
-    await this.setRefreshTokenHash(user.id, refreshToken);
+    await this.enqueueWelcomeEmailForNewUser(user);
 
-    return { email: user.email, name: user.name, refreshToken, accessToken };
+    return {
+      email: user.email,
+      name: user.name,
+      refreshToken: session.refreshToken,
+      accessToken: session.accessToken,
+    };
   }
 
-  private signAccessToken(payload: { userId: number; email: string }) {
-    return this.jwtService.sign(payload, { expiresIn: ms(ACCESS_TTL_MS) });
+  private async enqueueWelcomeEmailForNewUser(user: {
+    id: number;
+    email: string | null;
+    name: string | null;
+  }) {
+    await this.notificationService.enqueueWelcomeEmail({
+      userId: user.id,
+      email: user.email ?? '',
+      name: user.name ?? '',
+    });
   }
 
-  private signRefreshToken(payload: { userId: number; email: string }) {
-    return this.jwtService.sign(payload, { expiresIn: ms(REFRESH_TTL_MS) });
-  }
-
-  private async setRefreshTokenHash(userId: number, refreshToken: string) {
-    const hash = await bcryptjs.hash(refreshToken, 10);
-    await this.redisService.set(
-      REDIS_REFRESH_KEY(userId),
-      hash,
-      REFRESH_TTL_MS,
-    );
-  }
-
-  async loginWithThirdParty(user: UserEntity) {
-    const payload = { userId: user.id, email: user.email, role: user.role };
+  private async issueAuthSession(user: SessionUserType) {
+    const payload: JwtSignPayload = {
+      userId: user.id,
+      email: user.email || '',
+      role: user.role,
+    };
 
     const accessToken = this.signAccessToken(payload);
     const refreshToken = this.signRefreshToken(payload);
@@ -94,6 +100,38 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  private signAccessToken(payload: JwtSignPayload) {
+    return this.jwtService.sign(payload, { expiresIn: ms(ACCESS_TTL_MS) });
+  }
+
+  private signRefreshToken(payload: JwtSignPayload) {
+    return this.jwtService.sign(payload, { expiresIn: ms(REFRESH_TTL_MS) });
+  }
+
+  private async setRefreshTokenHash(userId: number, refreshToken: string) {
+    const hash = await bcryptjs.hash(refreshToken, 10);
+    await this.redisService.set(
+      REDIS_REFRESH_KEY(userId),
+      hash,
+      REFRESH_TTL_MS,
+    );
+  }
+
+  async loginWithThirdParty(user: ThirdPartyAuthUser) {
+    const session = await this.issueAuthSession({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
+
+    if (user.isNewUser) {
+      await this.enqueueWelcomeEmailForNewUser(user);
+    }
+
+    return session;
   }
 
   async login(loginDto: LoginDto) {
@@ -116,27 +154,12 @@ export class AuthService {
     if (!isPasswordValid)
       throw new UnauthorizedException('Invalid credentials');
 
-    const payload = {
-      userId: user.id,
-      email: user.email || '',
+    return this.issueAuthSession({
+      id: user.id,
+      email: user.email,
+      name: user.name,
       role: user.role,
-    };
-
-    const accessToken = this.signAccessToken(payload);
-    const refreshToken = this.signRefreshToken(payload);
-
-    await this.setRefreshTokenHash(user.id, refreshToken);
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-      accessToken,
-      refreshToken,
-    };
+    });
   }
 
   async logout(userId: number) {
@@ -164,17 +187,16 @@ export class AuthService {
     if (!isRefreshTokenValid)
       throw new UnauthorizedException('Invalid refresh token');
 
-    const payload = {
-      userId: user.id,
-      email: user.email || '',
+    const session = await this.issueAuthSession({
+      id: user.id,
+      email: user.email,
+      name: null,
       role: user.role,
+    });
+
+    return {
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
     };
-
-    const newAccessToken = this.signAccessToken(payload);
-    const newRefreshToken = this.signRefreshToken(payload);
-
-    await this.setRefreshTokenHash(user.id, newRefreshToken);
-
-    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 }

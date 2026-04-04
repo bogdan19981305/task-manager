@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { StringValue } from 'ms';
+import { NotificationModule } from 'src/notification/notification.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 import { AuthController } from './auth.controller';
@@ -16,6 +17,7 @@ import { JwtStrategy } from './strategies/jwt-strategy.strategy';
   providers: [AuthService, JwtStrategy, GoogleStrategy, GithubStrategy],
   imports: [
     PrismaModule,
+    NotificationModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

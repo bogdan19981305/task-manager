@@ -4,16 +4,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as bcryptjs from 'bcryptjs';
 import { RedisService } from 'src/common/redis/redis.service';
 import { Role, User } from 'src/generated/prisma/client';
+import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
+import { ThirdPartyAuthUser } from './types/third-party-auth-user.type';
 
-const mockCreateUser: Pick<User, 'email' | 'name' | 'id'> = {
+const mockCreateUser: Pick<User, 'email' | 'name' | 'id' | 'role'> = {
   email: 'test@example.com',
   name: 'Test User',
   id: 1,
+  role: Role.USER,
 };
 
 const mockLoginDto: LoginDto = {
@@ -56,6 +59,10 @@ const mockJwtService = {
   sign: jest.fn().mockReturnValue('1234567890'),
 };
 
+const mockNotificationService = {
+  enqueueWelcomeEmail: jest.fn().mockResolvedValue(undefined),
+};
+
 describe('AuthService', () => {
   let authService: AuthService;
 
@@ -75,6 +82,10 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: mockJwtService,
         },
+        {
+          provide: NotificationService,
+          useValue: mockNotificationService,
+        },
       ],
     }).compile();
 
@@ -86,6 +97,11 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValueOnce(null);
       const user = await authService.register(mockUserRegisterDto);
       expect(user).toEqual(mockRegisterUser);
+      expect(mockNotificationService.enqueueWelcomeEmail).toHaveBeenCalledWith({
+        userId: 1,
+        email: 'test@example.com',
+        name: 'Test User',
+      });
     });
 
     it('should throw an error if the user already exists', async () => {
@@ -153,6 +169,37 @@ describe('AuthService', () => {
         },
         accessToken: '1234567890',
         refreshToken: '1234567890',
+      });
+    });
+  });
+
+  describe('loginWithThirdParty', () => {
+    const oauthUser = {
+      id: 2,
+      email: 'oauth@example.com',
+      name: 'OAuth User',
+      role: Role.USER,
+    } satisfies Omit<ThirdPartyAuthUser, 'isNewUser'>;
+
+    it('should not enqueue welcome email when user already existed', async () => {
+      mockNotificationService.enqueueWelcomeEmail.mockClear();
+      await authService.loginWithThirdParty({
+        ...oauthUser,
+        isNewUser: false,
+      });
+      expect(mockNotificationService.enqueueWelcomeEmail).not.toHaveBeenCalled();
+    });
+
+    it('should enqueue welcome email on first OAuth registration', async () => {
+      mockNotificationService.enqueueWelcomeEmail.mockClear();
+      await authService.loginWithThirdParty({
+        ...oauthUser,
+        isNewUser: true,
+      });
+      expect(mockNotificationService.enqueueWelcomeEmail).toHaveBeenCalledWith({
+        userId: 2,
+        email: 'oauth@example.com',
+        name: 'OAuth User',
       });
     });
   });
