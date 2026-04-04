@@ -27,6 +27,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
 import { UserEntity } from './entities/user.entity';
+import { ThirdPartyAuthUser } from './types/third-party-auth-user.type';
 
 @Controller('auth')
 export class AuthController {
@@ -59,7 +60,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = req.user as unknown as UserEntity;
+    const user = req.user as unknown as ThirdPartyAuthUser;
     const { accessToken, refreshToken } =
       await this.authService.loginWithThirdParty(user);
     this.setAuthCookies(res, accessToken, refreshToken);
@@ -82,7 +83,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = req.user as unknown as UserEntity;
+    const user = req.user as unknown as ThirdPartyAuthUser;
     const { accessToken, refreshToken } =
       await this.authService.loginWithThirdParty(user);
     this.setAuthCookies(res, accessToken, refreshToken);

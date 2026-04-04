@@ -44,12 +44,15 @@ export class GithubStrategy extends PassportStrategy(Strategy) {
       });
     }
 
+    let isNewUser = false;
+
     if (!user) {
       user = await this.prisma.user.create({
         data: { email, name, githubId },
       });
+      isNewUser = true;
     }
 
-    return user;
+    return { ...user, isNewUser };
   }
 }
