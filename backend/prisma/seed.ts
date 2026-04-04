@@ -12,9 +12,17 @@ const backendRoot = path.join(__dirname, '..');
 
 /**
  * Loads env files without overriding variables already set (e.g. by Docker Compose).
- * Production: `.env.prod.docker` then `.env`.
- * Otherwise: `.env.docker` then `.env` (local Docker), then `.env.prod.docker` if `DATABASE_URL` is still missing.
- * Override with absolute/relative path: `PRISMA_SEED_ENV_FILE=.env.prod.docker pnpm db:seed`
+ *
+ * In containers, `DATABASE_URL` usually comes from Compose `env_file` (e.g. host
+ * `backend/.env.prod.docker`) — there is no copy of that file in the production
+ * image, so dotenv may no-op while `process.env` is already correct.
+ *
+ * On the host: production uses `.env.prod.docker` then `.env`; otherwise prefer
+ * `.env.docker`, but if it is missing (typical on prod servers), load
+ * `.env.prod.docker` before `.env`. If `DATABASE_URL` is still missing, try
+ * `.env.prod.docker` again as a last resort.
+ *
+ * Override: `PRISMA_SEED_ENV_FILE=.env.prod.docker pnpm db:seed`
  */
 function loadEnvForSeed(): void {
   const explicit = process.env.PRISMA_SEED_ENV_FILE;
@@ -42,7 +50,12 @@ function loadEnvForSeed(): void {
     tryLoad('.env.prod.docker');
     tryLoad('.env');
   } else {
-    tryLoad('.env.docker');
+    const envDocker = path.join(backendRoot, '.env.docker');
+    if (fs.existsSync(envDocker)) {
+      tryLoad('.env.docker');
+    } else {
+      tryLoad('.env.prod.docker');
+    }
     tryLoad('.env');
   }
 
