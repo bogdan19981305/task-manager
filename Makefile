@@ -1,4 +1,4 @@
-.PHONY: dev dev-build prod prod-build down migrate db-seed db-push studio studio-stop studio-status frontend frontend-build frontend-install status
+.PHONY: dev dev-build prod prod-build down down-prod migrate migrate-prod seed seed-dev seed-prod db-push db-push-prod migration-create studio studio-stop studio-status frontend frontend-build frontend-install status
 
 dev:
 	docker compose --env-file ./backend/.env.docker up -d
@@ -20,19 +20,44 @@ prod-build:
 	docker system prune -f
 
 down:
-	docker compose down
+	docker compose --env-file ./backend/.env.docker down
+
+down-prod:
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker down
 
 migrate:
-	docker compose exec backend npx prisma migrate dev
+	docker compose --env-file ./backend/.env.docker exec backend npx prisma migrate dev
 
+migrate-prod:
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker exec backend npx prisma migrate deploy
+
+# seed: picks prod stack if backend/.env.prod.docker exists and that compose project is up, else dev (requires .env.docker).
 seed:
-	docker compose exec backend pnpm db:seed
+	@if [ -f ./backend/.env.prod.docker ] && docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker ps -q backend 2>/dev/null | grep -q .; then \
+		docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker exec backend pnpm db:seed; \
+	elif [ -f ./backend/.env.docker ] && docker compose --env-file ./backend/.env.docker ps -q backend 2>/dev/null | grep -q .; then \
+		docker compose --env-file ./backend/.env.docker exec backend pnpm db:seed; \
+	else \
+		echo "No running backend, or missing env file."; \
+		echo "Prod: create backend/.env.prod.docker, run make prod, then make seed (or make seed-prod)."; \
+		echo "Dev:  create backend/.env.docker, run make dev,  then make seed (or make seed-dev)."; \
+		exit 1; \
+	fi
+
+seed-dev:
+	docker compose --env-file ./backend/.env.docker exec backend pnpm db:seed
+
+seed-prod:
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker exec backend pnpm db:seed
 
 migration-create:
-	docker compose exec backend npx prisma migrate dev --create-only
+	docker compose --env-file ./backend/.env.docker exec backend npx prisma migrate dev --create-only
 
 db-push:
-	docker compose exec backend npx prisma db push
+	docker compose --env-file ./backend/.env.docker exec backend npx prisma db push
+
+db-push-prod:
+	docker compose -f docker-compose.prod.yml --env-file ./backend/.env.prod.docker exec backend npx prisma db push
 
 studio:
 	@BACKEND_ID=$$(docker ps -q --filter label=com.docker.compose.project=task-manager --filter label=com.docker.compose.service=backend); \
