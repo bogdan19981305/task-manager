@@ -25,7 +25,7 @@ down:
 migrate:
 	docker compose exec backend npx prisma migrate dev
 
-db-seed:
+seed:
 	docker compose exec backend pnpm db:seed
 
 migration-create:

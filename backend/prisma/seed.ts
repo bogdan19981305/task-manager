@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -7,7 +8,50 @@ import dotenv from 'dotenv';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { BlogPostStatus, Role } from '../src/generated/prisma/enums';
 
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+const backendRoot = path.join(__dirname, '..');
+
+/**
+ * Loads env files without overriding variables already set (e.g. by Docker Compose).
+ * Production: `.env.prod.docker` then `.env`.
+ * Otherwise: `.env.docker` then `.env` (local Docker), then `.env.prod.docker` if `DATABASE_URL` is still missing.
+ * Override with absolute/relative path: `PRISMA_SEED_ENV_FILE=.env.prod.docker pnpm db:seed`
+ */
+function loadEnvForSeed(): void {
+  const explicit = process.env.PRISMA_SEED_ENV_FILE;
+  if (explicit) {
+    const resolved = path.isAbsolute(explicit)
+      ? explicit
+      : path.join(backendRoot, explicit);
+    if (!fs.existsSync(resolved)) {
+      throw new Error(
+        `PRISMA_SEED_ENV_FILE points to missing file: ${resolved}`,
+      );
+    }
+    dotenv.config({ path: resolved, override: true });
+    return;
+  }
+
+  const tryLoad = (filename: string) => {
+    const full = path.join(backendRoot, filename);
+    if (fs.existsSync(full)) {
+      dotenv.config({ path: full, override: false });
+    }
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    tryLoad('.env.prod.docker');
+    tryLoad('.env');
+  } else {
+    tryLoad('.env.docker');
+    tryLoad('.env');
+  }
+
+  if (!process.env.DATABASE_URL) {
+    tryLoad('.env.prod.docker');
+  }
+}
+
+loadEnvForSeed();
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
