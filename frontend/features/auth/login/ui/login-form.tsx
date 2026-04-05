@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { oauthLoginUrl } from "@/shared/lib/oauth-urls";
 
 import { LoginDto, loginDtoSchema } from "../model/schema";
 import { useLogin } from "../model/use-login";
@@ -105,7 +106,7 @@ export function LoginForm({
             variant="outline"
             type="button"
             onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
+              window.location.href = oauthLoginUrl("github");
             }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -120,7 +121,7 @@ export function LoginForm({
             variant="outline"
             type="button"
             onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+              window.location.href = oauthLoginUrl("google");
             }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

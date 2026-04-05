@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { oauthLoginUrl } from "@/shared/lib/oauth-urls";
 
 import { RegisterDto, registerDtoSchema } from "../model/schema";
 import { useRegister } from "../model/use-register";
@@ -137,7 +138,7 @@ const SignupForm = ({ className, ...props }: React.ComponentProps<"div">) => {
                   variant="outline"
                   type="button"
                   onClick={() => {
-                    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+                    window.location.href = oauthLoginUrl("google");
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -152,7 +153,7 @@ const SignupForm = ({ className, ...props }: React.ComponentProps<"div">) => {
                   variant="outline"
                   type="button"
                   onClick={() => {
-                    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/github`;
+                    window.location.href = oauthLoginUrl("github");
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

@@ -11,7 +11,7 @@ import {
 } from "@/shared/lib/blog-api";
 import { SectionScrollReveal } from "@/widgets/landing/animations/scroll-reveal";
 
-export type { BlogPostListItem as BlogPostPreview } from "@/shared/lib/blog-api";
+export type { BlogPostListItem as BlogPostPreview } from "@/shared/types/blog";
 
 function PostThumbnailPlaceholder({ className }: { className?: string }) {
   return (

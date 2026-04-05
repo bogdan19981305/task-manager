@@ -1,4 +1,4 @@
-import { Gamepad, HomeIcon, ListIcon } from "lucide-react";
+import { Gamepad, HomeIcon, ListIcon, Shield } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +15,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { useMe } from "@/features/auth/queries";
 
 interface SidebarItem {
   title: string;
@@ -36,6 +37,20 @@ const data: DataToRender = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { data: me } = useMe();
+
+  const navMain: SidebarItem[] = [
+    ...data.navMain,
+    ...(me?.role === "ADMIN"
+      ? [
+          {
+            title: "Plans (admin)",
+            url: "/admin/plans",
+            icon: <Shield className="size-4" />,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <Sidebar {...props}>
@@ -58,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item) => (
+            {navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={item.url === pathname}>
                   <Link href={item.url ?? ""} className="font-medium">

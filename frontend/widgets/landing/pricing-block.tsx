@@ -1,7 +1,8 @@
 "use client";
 
 import { CircleCheck } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,91 +15,87 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import {
+  type LandingPricingPlan,
+  mapPublicPlansToLandingCards,
+} from "@/shared/lib/plans-display";
+import type { PublicPlan } from "@/shared/types/plans";
 import { SectionScrollReveal } from "@/widgets/landing/animations/scroll-reveal";
-
-interface PricingFeature {
-  text: string;
-}
-
-interface PricingPlan {
-  id: string;
-  name: string;
-  description: string;
-  monthlyPrice: string;
-  yearlyPrice: string;
-  features: PricingFeature[];
-  button: {
-    text: string;
-    url: string;
-  };
-}
 
 interface PricingBlockProps {
   heading?: string;
   description?: string;
-  plans?: PricingPlan[];
+  /** When set and non-empty, replaces default static plans (from API /plans). */
+  dbPlans?: PublicPlan[] | null;
   className?: string;
 }
+
+const FALLBACK_PLANS: LandingPricingPlan[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    description: "For solo builders and small teams getting organized",
+    monthlyPrice: "$19",
+    yearlyPrice: "$179",
+    features: [
+      { text: "Up to 5 teammates on one workspace" },
+      { text: "Unlimited tasks, statuses, and priorities" },
+      { text: "Due dates and filters so nothing slips" },
+      { text: "Community support" },
+    ],
+    button: { text: "Get started", url: "/auth/sign-up" },
+    highlighted: false,
+    showStarterUpsellLine: false,
+  },
+  {
+    id: "team",
+    name: "Team",
+    description: "For teams that ship together every week",
+    monthlyPrice: "$49",
+    yearlyPrice: "$359",
+    features: [
+      { text: "Unlimited members in your workspace" },
+      { text: "Saved views, bulk actions, and deeper filters" },
+      { text: "Priority support when the board is critical" },
+      { text: "Exports and longer activity history" },
+    ],
+    button: { text: "Get started", url: "/auth/sign-up" },
+    highlighted: true,
+    showStarterUpsellLine: true,
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    description: "Security, scale, and support for whole organizations",
+    monthlyPrice: "$99",
+    yearlyPrice: "$899",
+    features: [
+      { text: "Org-wide roles, policies, and audit-friendly controls" },
+      { text: "SSO and advanced security reviews (on request)" },
+      { text: "Dedicated onboarding and a named contact" },
+      { text: "Custom SLA and terms for your procurement" },
+    ],
+    button: { text: "Contact sales", url: "/contact" },
+    highlighted: false,
+    showStarterUpsellLine: false,
+  },
+];
 
 const PricingBlock = ({
   heading = "Pricing that fits your workflow",
   description = "One dashboard for tasks and deadlines. Pick a plan for your team size. Change or cancel anytime.",
-  plans = [
-    {
-      id: "starter",
-      name: "Starter",
-      description: "For solo builders and small teams getting organized",
-      monthlyPrice: "$19",
-      yearlyPrice: "$179",
-      features: [
-        { text: "Up to 5 teammates on one workspace" },
-        { text: "Unlimited tasks, statuses, and priorities" },
-        { text: "Due dates and filters so nothing slips" },
-        { text: "Community support" },
-      ],
-      button: {
-        text: "Get started",
-        url: "/auth/sign-up",
-      },
-    },
-    {
-      id: "team",
-      name: "Team",
-      description: "For teams that ship together every week",
-      monthlyPrice: "$49",
-      yearlyPrice: "$359",
-      features: [
-        { text: "Unlimited members in your workspace" },
-        { text: "Saved views, bulk actions, and deeper filters" },
-        { text: "Priority support when the board is critical" },
-        { text: "Exports and longer activity history" },
-      ],
-      button: {
-        text: "Get started",
-        url: "/auth/sign-up",
-      },
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise",
-      description: "Security, scale, and support for whole organizations",
-      monthlyPrice: "$99",
-      yearlyPrice: "$899",
-      features: [
-        { text: "Org-wide roles, policies, and audit-friendly controls" },
-        { text: "SSO and advanced security reviews (on request)" },
-        { text: "Dedicated onboarding and a named contact" },
-        { text: "Custom SLA and terms for your procurement" },
-      ],
-      button: {
-        text: "Contact sales",
-        url: "/contact",
-      },
-    },
-  ],
+  dbPlans = null,
   className,
 }: PricingBlockProps) => {
   const [isYearly, setIsYearly] = useState(false);
+
+  const plans = useMemo(() => {
+    if (dbPlans && dbPlans.length > 0) {
+      return mapPublicPlansToLandingCards(dbPlans);
+    }
+    return FALLBACK_PLANS;
+  }, [dbPlans]);
+
   return (
     <SectionScrollReveal
       id="pricing"
@@ -116,10 +113,7 @@ const PricingBlock = ({
           <p data-reveal className="text-muted-foreground lg:text-xl">
             {description}
           </p>
-          <div
-            data-reveal
-            className="flex items-center gap-3 text-lg"
-          >
+          <div data-reveal className="flex items-center gap-3 text-lg">
             Monthly
             <Switch
               checked={isYearly}
@@ -132,31 +126,34 @@ const PricingBlock = ({
               <Card
                 key={plan.id}
                 data-reveal
-                className="flex w-80 flex-col justify-between text-left"
+                className={cn(
+                  "flex w-80 flex-col justify-between text-left transition-shadow",
+                  plan.highlighted && "ring-primary/25 shadow-md ring-2",
+                )}
               >
                 <CardHeader>
                   <CardTitle>
                     <p>{plan.name}</p>
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {plan.description}
                   </p>
                   <div className="flex items-end">
                     <span className="text-4xl font-semibold">
                       {isYearly ? plan.yearlyPrice : plan.monthlyPrice}
                     </span>
-                    <span className="text-2xl font-semibold text-muted-foreground">
+                    <span className="text-muted-foreground text-2xl font-semibold">
                       {isYearly ? "/yr" : "/mo"}
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <Separator className="mb-6" />
-                  {plan.id === "team" && (
+                  {plan.showStarterUpsellLine ? (
                     <p className="mb-3 font-semibold">
                       Everything in Starter, and:
                     </p>
-                  )}
+                  ) : null}
                   <ul className="space-y-4">
                     {plan.features.map((feature, index) => (
                       <li
@@ -171,9 +168,7 @@ const PricingBlock = ({
                 </CardContent>
                 <CardFooter className="mt-auto">
                   <Button asChild className="w-full">
-                    <a href={plan.button.url} target="_blank">
-                      {plan.button.text}
-                    </a>
+                    <Link href={plan.button.url}>{plan.button.text}</Link>
                   </Button>
                 </CardFooter>
               </Card>

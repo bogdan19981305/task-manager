@@ -1,11 +1,10 @@
 "use client";
+
 import axios, { AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 
-export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
-  withCredentials: true,
-});
+import { api } from "./api-client";
+import { API_PATHS } from "./paths";
 
 api.interceptors.response.use(
   (response) => response,
@@ -16,8 +15,8 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/refresh") &&
-      !originalRequest.url?.includes("/auth/login")
+      !originalRequest.url?.includes(API_PATHS.auth.refresh) &&
+      !originalRequest.url?.includes(API_PATHS.auth.login)
     ) {
       originalRequest._retry = true;
       try {
@@ -43,3 +42,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+export { api };

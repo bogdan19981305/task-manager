@@ -1,5 +1,8 @@
+export type UserRole = "ADMIN" | "USER";
+
 export type MeDto = {
-  id: string;
+  id: number;
   email: string;
-  name: string;
+  name: string | null;
+  role: UserRole;
 };
