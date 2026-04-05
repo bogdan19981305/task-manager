@@ -4,6 +4,7 @@ import { PaymentStatus, Provider } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 
+import { STRIPE_API_VERSION } from './constants/payments.constant';
 import { CreateCheckoutSessionParams } from './types/create-checkout-session.type';
 
 type StripeClient = import('stripe/cjs/stripe.core').Stripe;
@@ -25,7 +26,7 @@ export class PaymentsService {
     this.stripe = new StripeCJsConstructor(
       this.configService.getOrThrow<string>('STRIPE_SECRET_KEY'),
       {
-        apiVersion: '2026-03-25.dahlia',
+        apiVersion: STRIPE_API_VERSION,
       },
     );
   }
