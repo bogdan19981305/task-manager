@@ -13,7 +13,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   ACCESS_TTL_MS,
   REDIS_REFRESH_KEY,
-  REFRESH_TTL_MS,
+  REFRESH_TTL_SECONDS,
 } from './constants/auth.constants';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
@@ -107,7 +107,7 @@ export class AuthService {
   }
 
   private signRefreshToken(payload: JwtSignPayload) {
-    return this.jwtService.sign(payload, { expiresIn: ms(REFRESH_TTL_MS) });
+    return this.jwtService.sign(payload, { expiresIn: REFRESH_TTL_SECONDS });
   }
 
   private async setRefreshTokenHash(userId: number, refreshToken: string) {
@@ -115,7 +115,7 @@ export class AuthService {
     await this.redisService.set(
       REDIS_REFRESH_KEY(userId),
       hash,
-      REFRESH_TTL_MS,
+      REFRESH_TTL_SECONDS,
     );
   }
 
