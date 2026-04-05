@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { PAGINATION_PAGE_SIZE_DEFAULT } from "@/config/global";
 import { useTasks } from "@/features/tasks/model/use-tasks";
+import { useTasksRealtime } from "@/features/tasks/model/use-tasks-realtime";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/shared/components";
 
@@ -26,6 +27,7 @@ import { useUpdateTask } from "../model/use-update-task";
 import TaskDrawer from "./task-drawer";
 import TaskViewDrawer from "./task-view-drawer";
 import TasksFilter from "./tasks-filter";
+import { TasksRealtimeStatus } from "./tasks-realtime-status";
 import TasksRow from "./tasks-row";
 
 export default function TasksTable() {
@@ -34,11 +36,11 @@ export default function TasksTable() {
   const [status, setStatus] = useState<TaskStatus | null>(null);
   const [openCreateDrawer, setOpenCreateDrawer] = useState(false);
   const { data: tasksData, isLoading } = useTasks({ page, limit, status });
+  const { connectionStatus } = useTasksRealtime();
 
   const searchParams = useSearchParams();
   const editId = searchParams.get("editId");
   const viewId = searchParams.get("viewId");
-  console.log(editId);
 
   const { mutate: deleteTask } = useDeleteTask({
     onSuccess: () => {
@@ -65,8 +67,11 @@ export default function TasksTable() {
 
   return (
     <div className="mb-10">
-      <div className="flex justify-between items-center p-4">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+      <div className="flex justify-between items-center gap-4 p-4">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight">Tasks</h1>
+          <TasksRealtimeStatus status={connectionStatus} />
+        </div>
         <Button
           className={cn(
             "cursor-pointer",
