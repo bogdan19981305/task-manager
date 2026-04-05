@@ -5,6 +5,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import Stripe from 'stripe';
 import type { Stripe as StripeTypes } from 'stripe/cjs/stripe.core';
 
+import { STRIPE_API_VERSION } from '../constants/payments.constant';
+
 type StripeClient = import('stripe/cjs/stripe.core').Stripe;
 
 const StripeCJsConstructor = Stripe as unknown as new (
@@ -25,7 +27,7 @@ export class PaymentsWebhookService {
     this.stripe = new StripeCJsConstructor(
       this.configService.getOrThrow<string>('STRIPE_SECRET_KEY'),
       {
-        apiVersion: '2026-03-25.dahlia',
+        apiVersion: STRIPE_API_VERSION,
       },
     );
 
