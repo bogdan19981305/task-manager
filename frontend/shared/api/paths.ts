@@ -17,4 +17,7 @@ export const API_PATHS = {
   payments: {
     checkoutSession: "/payments/checkout-session",
   },
+  tasks: {
+    generateDescription: "/tasks/generate-description",
+  },
 } as const;
