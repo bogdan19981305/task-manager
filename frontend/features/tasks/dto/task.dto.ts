@@ -1,4 +1,4 @@
-import { PaginatedResponse } from "@/shared/api/types";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
 export interface Task {
   id: string;

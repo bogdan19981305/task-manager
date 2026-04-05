@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { fetchPublicPlans } from "@/shared/lib/plans-api";
 import { PricingComparison } from "@/widgets/public/pricing-comparison";
 
 export const metadata: Metadata = {
@@ -11,7 +12,9 @@ export const metadata: Metadata = {
     "Plans for every team size—Starter, Team, and Enterprise. Compare features and choose monthly or yearly billing.",
 };
 
-const PricingPage = () => {
+const PricingPage = async () => {
+  const plans = await fetchPublicPlans();
+
   return (
     <main className="bg-background">
       <div className="mx-auto max-w-3xl px-4 pt-14 pb-10 text-center sm:px-6 sm:pt-20 sm:pb-12 lg:px-8">
@@ -35,7 +38,7 @@ const PricingPage = () => {
         </div>
       </div>
 
-      <PricingComparison />
+      <PricingComparison dbPlans={plans} />
 
       <section className="border-t border-border bg-background px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-muted/40 px-6 py-8 text-center sm:px-10 sm:py-10">

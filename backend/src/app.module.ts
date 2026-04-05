@@ -12,6 +12,7 @@ import { BlogModule } from './blog/blog.module';
 import { RedisModule } from './common/redis/redis.module';
 import { RedisService } from './common/redis/redis.service';
 import { NotificationModule } from './notification/notification.module';
+import { PlansModule } from './plans/plans.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
@@ -27,6 +28,7 @@ import { UsersModule } from './users/users.module';
     RedisModule,
     TasksModule,
     BlogModule,
+    PlansModule,
     UsersModule,
     ThrottlerModule.forRootAsync({
       inject: [RedisService],

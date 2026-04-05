@@ -1,27 +1,16 @@
-import type { PaginatedResponse } from "@/shared/api/types";
+import axios from "axios";
+import { unstable_cache } from "next/cache";
 
-export const BLOG_API_BASE = process.env.NEXT_PUBLIC_API_URL;
+import { api } from "@/shared/api/api-client";
+import { API_PATHS } from "@/shared/api/paths";
+import type {
+  BlogPostAuthor,
+  BlogPostDetail,
+  BlogPostListItem,
+} from "@/shared/types/blog";
+import type { PaginatedResponse } from "@/shared/types/pagination";
 
-export type BlogPostAuthor = {
-  id: number;
-  email: string | null;
-  name: string | null;
-};
-
-export type BlogPostListItem = {
-  id: string;
-  title: string;
-  excerpt: string | null;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-  author: BlogPostAuthor;
-};
-
-export type BlogPostDetail = BlogPostListItem & {
-  content: string | null;
-  status: string;
-};
+export type { BlogPostAuthor, BlogPostDetail, BlogPostListItem };
 
 const FETCH_REVALIDATE = 60;
 
@@ -36,47 +25,43 @@ export async function fetchBlogPostsPage(
   page: number,
   limit: number,
 ): Promise<PaginatedResponse<BlogPostListItem> | null> {
-  try {
-    const url = new URL("/blog/posts", BLOG_API_BASE);
-    url.searchParams.set("page", String(page));
-    url.searchParams.set("limit", String(limit));
-
-    const res = await fetch(url.toString(), {
-      next: { revalidate: FETCH_REVALIDATE },
-    });
-
-    if (!res.ok) {
-      return null;
-    }
-
-    return (await res.json()) as PaginatedResponse<BlogPostListItem>;
-  } catch {
-    return null;
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const { data } = await api.get<PaginatedResponse<BlogPostListItem>>(
+          API_PATHS.blog.posts,
+          { params: { page, limit } },
+        );
+        return data;
+      } catch {
+        return null;
+      }
+    },
+    ["blog-posts-page", String(page), String(limit)],
+    { revalidate: FETCH_REVALIDATE },
+  )();
 }
 
 export async function fetchBlogPostBySlug(
   slug: string,
 ): Promise<BlogPostDetail | null> {
-  try {
-    const url = `${BLOG_API_BASE}/blog/posts/${encodeURIComponent(slug)}`;
-
-    const res = await fetch(url, {
-      next: { revalidate: FETCH_REVALIDATE },
-    });
-
-    if (res.status === 404) {
-      return null;
-    }
-
-    if (!res.ok) {
-      return null;
-    }
-
-    return (await res.json()) as BlogPostDetail;
-  } catch {
-    return null;
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const { data } = await api.get<BlogPostDetail>(
+          API_PATHS.blog.postBySlug(slug),
+        );
+        return data;
+      } catch (e) {
+        if (axios.isAxiosError(e) && e.response?.status === 404) {
+          return null;
+        }
+        return null;
+      }
+    },
+    ["blog-post-detail", slug],
+    { revalidate: FETCH_REVALIDATE },
+  )();
 }
 
 export function formatBlogDate(iso: string): string {

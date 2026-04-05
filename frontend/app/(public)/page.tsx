@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { fetchPublicPlans } from "@/shared/lib/plans-api";
 import BlogSection, {
   BlogSectionSkeleton,
 } from "@/widgets/landing/blog-section";
@@ -10,7 +11,9 @@ import HeroSection from "@/widgets/landing/hero-section";
 import PricingBlock from "@/widgets/landing/pricing-block";
 import SocialProofSection from "@/widgets/landing/social-proof-section";
 
-const PublicPage = () => {
+const PublicPage = async () => {
+  const plans = await fetchPublicPlans();
+
   return (
     <main className="flex flex-col">
       <HeroSection />
@@ -20,7 +23,7 @@ const PublicPage = () => {
       <Suspense fallback={<BlogSectionSkeleton />}>
         <BlogSection />
       </Suspense>
-      <PricingBlock />
+      <PricingBlock dbPlans={plans} />
       <FaqSection />
     </main>
   );
