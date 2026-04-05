@@ -98,6 +98,9 @@ dependencies:
   rxjs:
     specifier: ^7.8.1
     version: 7.8.2
+  stripe:
+    specifier: ^22.0.0
+    version: 22.0.0(@types/node@22.19.13)
   swagger-ui-express:
     specifier: ^5.0.1
     version: 5.0.1(express@5.2.1)
@@ -9558,6 +9561,21 @@ packages:
       }
     engines: { node: '>=8' }
     dev: true
+
+  /stripe@22.0.0(@types/node@22.19.13):
+    resolution:
+      {
+        integrity: sha512-q1UgXXpSfZCmkyzZEh3vFEWT7+ajuaFGqaP9Tsi2NMtwlkigIWNr+KBIUQqtNeNEsreDKgdn+BP5HRW9JDj22Q==,
+      }
+    engines: { node: '>=18' }
+    peerDependencies:
+      '@types/node': '>=18'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@types/node': 22.19.13
+    dev: false
 
   /strnum@2.2.2:
     resolution:

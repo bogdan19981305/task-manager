@@ -12,6 +12,7 @@ import { BlogModule } from './blog/blog.module';
 import { RedisModule } from './common/redis/redis.module';
 import { RedisService } from './common/redis/redis.service';
 import { NotificationModule } from './notification/notification.module';
+import { PaymentsModule } from './payments/payments.modulle';
 import { PlansModule } from './plans/plans.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TasksModule } from './tasks/tasks.module';
@@ -48,6 +49,7 @@ import { UsersModule } from './users/users.module';
       }),
     }),
     NotificationModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

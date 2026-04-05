@@ -1,10 +1,8 @@
 "use client";
 
 import { CircleCheck } from "lucide-react";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { PlanPurchaseCtaButton } from "@/features/payments/ui/plan-purchase-cta-button";
 import { cn } from "@/lib/utils";
 import {
   type LandingPricingPlan,
@@ -43,7 +42,8 @@ const FALLBACK_PLANS: LandingPricingPlan[] = [
       { text: "Due dates and filters so nothing slips" },
       { text: "Community support" },
     ],
-    button: { text: "Get started", url: "/auth/sign-up" },
+    button: { text: "Get started" },
+    purchaseAction: { kind: "link", href: "/auth/sign-in" },
     highlighted: false,
     showStarterUpsellLine: false,
   },
@@ -59,7 +59,8 @@ const FALLBACK_PLANS: LandingPricingPlan[] = [
       { text: "Priority support when the board is critical" },
       { text: "Exports and longer activity history" },
     ],
-    button: { text: "Get started", url: "/auth/sign-up" },
+    button: { text: "Get started" },
+    purchaseAction: { kind: "link", href: "/auth/sign-in" },
     highlighted: true,
     showStarterUpsellLine: true,
   },
@@ -75,7 +76,8 @@ const FALLBACK_PLANS: LandingPricingPlan[] = [
       { text: "Dedicated onboarding and a named contact" },
       { text: "Custom SLA and terms for your procurement" },
     ],
-    button: { text: "Contact sales", url: "/contact" },
+    button: { text: "Contact sales" },
+    purchaseAction: { kind: "link", href: "/contact" },
     highlighted: false,
     showStarterUpsellLine: false,
   },
@@ -167,9 +169,12 @@ const PricingBlock = ({
                   </ul>
                 </CardContent>
                 <CardFooter className="mt-auto">
-                  <Button asChild className="w-full">
-                    <Link href={plan.button.url}>{plan.button.text}</Link>
-                  </Button>
+                  <PlanPurchaseCtaButton
+                    className="w-full"
+                    label={plan.button.text}
+                    action={plan.purchaseAction}
+                    isYearly={isYearly}
+                  />
                 </CardFooter>
               </Card>
             ))}

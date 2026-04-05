@@ -1,4 +1,14 @@
-import { Gamepad, HomeIcon, ListIcon, Shield } from "lucide-react";
+import {
+  Bell,
+  Building2,
+  Gamepad,
+  History,
+  HomeIcon,
+  ListIcon,
+  Plug,
+  Shield,
+  UserCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -32,6 +42,11 @@ const data: DataToRender = {
   navMain: [
     { title: "Dashboard", url: "/dashboard", icon: <HomeIcon /> },
     { title: "Tasks", url: "/tasks", icon: <ListIcon /> },
+    { title: "Workspace", url: "/workspace", icon: <Building2 /> },
+    { title: "Integrations", url: "/integrations", icon: <Plug /> },
+    { title: "Notifications", url: "/notifications", icon: <Bell /> },
+    { title: "Activity", url: "/activity", icon: <History /> },
+    { title: "Account", url: "/account", icon: <UserCircle /> },
   ],
 };
 
@@ -75,7 +90,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             {navMain.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild isActive={item.url === pathname}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={
+                    pathname === item.url ||
+                    pathname.startsWith(`${item.url}/`)
+                  }
+                >
                   <Link href={item.url ?? ""} className="font-medium">
                     {item?.icon && <div className="size-4">{item.icon}</div>}
                     {item.title}

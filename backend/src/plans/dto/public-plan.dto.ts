@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PlanKey } from 'src/generated/prisma/enums';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { BillingInterval, PlanKey } from 'src/generated/prisma/enums';
 
 export class PublicPlanDto {
   @ApiProperty()
@@ -7,6 +7,9 @@ export class PublicPlanDto {
 
   @ApiProperty({ enum: PlanKey, enumName: 'PlanKey' })
   key: PlanKey;
+
+  @ApiProperty({ enum: BillingInterval, enumName: 'BillingInterval' })
+  interval: BillingInterval;
 
   @ApiProperty()
   name: string;
@@ -25,4 +28,7 @@ export class PublicPlanDto {
 
   @ApiProperty()
   sortOrder: number;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Trial period in days' })
+  trialDays: number | null;
 }

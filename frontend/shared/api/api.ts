@@ -20,10 +20,12 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        await api.post("/auth/refresh");
+        await api.post(API_PATHS.auth.refresh);
         return api(originalRequest);
       } catch {
-        if (!window.location.pathname.includes("/auth/sign-in")) {
+        const url = originalRequest.url ?? "";
+        const wasAuthMe = url.includes(API_PATHS.auth.me);
+        if (!wasAuthMe && !window.location.pathname.includes("/auth/sign-in")) {
           toast.error("Session expired. Please sign in again");
           window.location.href = "/auth/sign-in";
         }
@@ -37,7 +39,15 @@ api.interceptors.response.use(
         );
         return Promise.reject(error);
       }
-      toast.error(error.response?.data?.message);
+      const reqUrl = error.config?.url ?? "";
+      const status = error.response.status;
+      const silentGuestAuth =
+        status === 401 &&
+        (reqUrl.includes(API_PATHS.auth.me) ||
+          reqUrl.includes(API_PATHS.auth.refresh));
+      if (!silentGuestAuth) {
+        toast.error(error.response?.data?.message);
+      }
     }
     return Promise.reject(error);
   },

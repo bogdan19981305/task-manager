@@ -9,7 +9,7 @@ import * as bcryptjs from 'bcryptjs';
 import cookieParser from 'cookie-parser';
 import { AppModule } from 'src/app.module';
 import { RedisService } from 'src/common/redis/redis.service';
-import { PlanKey, Role } from 'src/generated/prisma/enums';
+import { BillingInterval, PlanKey, Role } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 import request from 'supertest';
 import type TestAgent from 'supertest/lib/agent';
@@ -134,11 +134,13 @@ describe('Plans (e2e)', () => {
       expect(res.body[0]).toEqual(
         expect.objectContaining({
           key: PlanKey.STARTER,
+          interval: BillingInterval.MONTH,
           name: 'Starter',
           price: 0,
           currency: 'usd',
           features: ['f1'],
           sortOrder: 1,
+          trialDays: null,
         }),
       );
       expect(res.body[0]).not.toHaveProperty('permissions');
@@ -174,9 +176,11 @@ describe('Plans (e2e)', () => {
       expect(res.body[0]).toEqual(
         expect.objectContaining({
           key: PlanKey.STARTER,
+          interval: BillingInterval.MONTH,
           name: 'S',
           isActive: false,
           permissions: [],
+          trialDays: null,
         }),
       );
     });
@@ -201,20 +205,58 @@ describe('Plans (e2e)', () => {
         expect.objectContaining({
           id: expect.any(Number),
           key: PlanKey.PREMIUM,
+          interval: BillingInterval.MONTH,
           name: 'Premium',
           description: 'Top tier',
           price: 4900,
           currency: 'usd',
           features: ['Everything'],
           permissions: ['tasks:read'],
+          trialDays: null,
         }),
       );
     });
 
-    it('should return 409 when key already exists', async () => {
+    it('should create monthly and yearly rows for the same plan key', async () => {
+      const monthly = await adminAgent.post('/admin/plans').send({
+        key: PlanKey.STARTER,
+        interval: BillingInterval.MONTH,
+        name: 'Starter Monthly',
+        price: 1900,
+        features: ['a'],
+        permissions: ['p'],
+        trialDays: 14,
+      });
+      expect(monthly.status).toBe(201);
+      expect(monthly.body).toEqual(
+        expect.objectContaining({
+          key: PlanKey.STARTER,
+          interval: BillingInterval.MONTH,
+          trialDays: 14,
+        }),
+      );
+
+      const yearly = await adminAgent.post('/admin/plans').send({
+        key: PlanKey.STARTER,
+        interval: BillingInterval.YEAR,
+        name: 'Starter Yearly',
+        price: 17900,
+        features: ['a'],
+        permissions: ['p'],
+      });
+      expect(yearly.status).toBe(201);
+      expect(yearly.body.interval).toBe(BillingInterval.YEAR);
+
+      const list = await adminAgent.get('/admin/plans');
+      expect(list.status).toBe(200);
+      expect(list.body).toHaveLength(2);
+    });
+
+    it('should return 409 when key and interval already exist', async () => {
       await prisma.plan.create({
         data: {
           key: PlanKey.STARTER,
+          interval: BillingInterval.MONTH,
           name: 'Existing',
           price: 0,
           features: [],
@@ -225,6 +267,7 @@ describe('Plans (e2e)', () => {
       const res = await adminAgent.post('/admin/plans').send({
         ...validBody,
         key: PlanKey.STARTER,
+        interval: BillingInterval.MONTH,
       });
 
       expect(res.status).toBe(409);

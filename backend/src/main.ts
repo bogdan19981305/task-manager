@@ -12,7 +12,9 @@ async function bootstrap() {
   const frontendUrl = configService.getOrThrow<string>('FRONTEND_URL');
   const port = configService.getOrThrow<number>('PORT');
   const nodeEnv = configService.getOrThrow<string>('NODE_ENV');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
 
   if (nodeEnv === 'development') {
     const config = new DocumentBuilder()

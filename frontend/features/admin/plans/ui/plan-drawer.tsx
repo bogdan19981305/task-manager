@@ -47,6 +47,8 @@ type PlanDrawerProps = {
 
 const emptyDefaults: PlanAdminFormValues = {
   key: "STARTER",
+  interval: "MONTH",
+  trialDays: undefined,
   name: "",
   description: "",
   price: 0,
@@ -81,6 +83,8 @@ export function PlanDrawer({
     if (mode === "edit" && plan) {
       reset({
         key: plan.key,
+        interval: plan.interval,
+        trialDays: plan.trialDays ?? undefined,
         name: plan.name,
         description: plan.description ?? "",
         price: plan.price,
@@ -122,9 +126,14 @@ export function PlanDrawer({
     const stripePriceId = values.stripePriceId?.trim() || undefined;
     const stripeProductId = values.stripeProductId?.trim() || undefined;
 
+    const trialDays =
+      values.trialDays !== undefined ? values.trialDays : null;
+
     if (mode === "create") {
       createPlan({
         key: values.key,
+        interval: values.interval,
+        trialDays,
         name: values.name.trim(),
         description,
         price: values.price,
@@ -144,6 +153,8 @@ export function PlanDrawer({
       id: plan.id,
       data: {
         key: values.key,
+        interval: values.interval,
+        trialDays,
         name: values.name.trim(),
         description,
         price: values.price,
@@ -173,8 +184,8 @@ export function PlanDrawer({
             {mode === "create" ? "Create plan" : "Edit plan"}
           </DrawerTitle>
           <DrawerDescription>
-            Manage subscription plan metadata shown to customers and used for
-            billing.
+            Each row is one Stripe subscription price: plan key plus billing
+            interval (monthly or yearly) must be unique.
           </DrawerDescription>
         </DrawerHeader>
         <form
@@ -204,6 +215,52 @@ export function PlanDrawer({
               )}
             />
             {errors.key ? <FieldError>{errors.key.message}</FieldError> : null}
+          </Field>
+
+          <Field>
+            <Label htmlFor="plan-interval">Billing interval</Label>
+            <Controller
+              name="interval"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={pending}
+                >
+                  <SelectTrigger id="plan-interval" className="w-full">
+                    <SelectValue placeholder="Interval" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MONTH">Monthly</SelectItem>
+                    <SelectItem value="YEAR">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.interval ? (
+              <FieldError>{errors.interval.message}</FieldError>
+            ) : null}
+          </Field>
+
+          <Field>
+            <Label htmlFor="plan-trial">Trial days (optional)</Label>
+            <Input
+              id="plan-trial"
+              type="number"
+              min={0}
+              placeholder="No trial"
+              disabled={pending}
+              {...register("trialDays", {
+                setValueAs: (v) =>
+                  v === "" || v === null || v === undefined
+                    ? undefined
+                    : Number(v),
+              })}
+            />
+            {errors.trialDays ? (
+              <FieldError>{errors.trialDays.message}</FieldError>
+            ) : null}
           </Field>
 
           <Field>

@@ -53,6 +53,7 @@ const mockUser: User = {
   githubId: '1234567890',
   passwordHash: '1234567890',
   role: Role.USER,
+  stripeCustomerId: null,
 };
 
 const mockRedisService = {

@@ -7,15 +7,38 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
-import { PlanKey } from 'src/generated/prisma/enums';
+import { BillingInterval, PlanKey } from 'src/generated/prisma/enums';
 
 export class PlanCreateDto {
   @ApiProperty({ enum: PlanKey, enumName: 'PlanKey' })
   @IsEnum(PlanKey)
   key: PlanKey;
+
+  @ApiPropertyOptional({
+    enum: BillingInterval,
+    enumName: 'BillingInterval',
+    default: BillingInterval.MONTH,
+    description: 'Defaults to MONTH when omitted',
+  })
+  @IsOptional()
+  @IsEnum(BillingInterval)
+  interval?: BillingInterval;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Free trial length in days (omit or null for no trial)',
+  })
+  @IsOptional()
+  @ValidateIf((_, v: unknown) => v !== null && v !== undefined)
+  @IsInt()
+  @Min(0)
+  @Max(3660)
+  trialDays?: number | null;
 
   @ApiProperty({ example: 'Pro' })
   @IsString()
