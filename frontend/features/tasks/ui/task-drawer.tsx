@@ -3,7 +3,7 @@ import { IconEdit, IconPlus } from "@tabler/icons-react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useMe } from "@/features/auth/queries";
 import useUsers from "@/features/users/model/use-users";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ import {
 import useCreateTask from "../model/use-create-task";
 import useTaskById from "../model/use-task";
 import { useUpdateTask } from "../model/use-update-task";
+import { TaskAiGenerateButton } from "./task-ai-generate-button";
 
 type TaskDrawerProps = {
   open: boolean;
@@ -45,12 +47,14 @@ type TaskDrawerProps = {
 
 const TaskDrawer = ({ open, setOpen, mode, taskId }: TaskDrawerProps) => {
   const router = useRouter();
+  const { data: me } = useMe();
   const { data: taskData, isLoading } = useTaskById(taskId);
   const {
     register,
     handleSubmit,
     reset,
     control,
+    setValue,
     formState: { errors },
   } = useForm<TaskCreateSchema>({
     resolver: zodResolver(taskCreateSchema),
@@ -121,6 +125,11 @@ const TaskDrawer = ({ open, setOpen, mode, taskId }: TaskDrawerProps) => {
       });
     }
   }, [taskData?.data, mode, taskData, reset]);
+
+  const titleValue = useWatch({ control, name: "title", defaultValue: "" });
+  const hasTitleForAi =
+    typeof titleValue === "string" && titleValue.trim().length > 0;
+  const showAiButton = hasTitleForAi && me?.role === "ADMIN";
 
   return (
     <Drawer
@@ -199,8 +208,24 @@ const TaskDrawer = ({ open, setOpen, mode, taskId }: TaskDrawerProps) => {
                   )}
                 />
               </div>
-              <div className="flex flex-col items-start gap-2 col-span-12">
-                <Label htmlFor="content">Content</Label>
+              <div className="flex flex-col items-stretch gap-2 col-span-12">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Label htmlFor="content" className="mb-0">
+                    Content
+                  </Label>
+                  <TaskAiGenerateButton
+                    visible={showAiButton}
+                    title={
+                      typeof titleValue === "string" ? titleValue : ""
+                    }
+                    setContent={(value) =>
+                      setValue("content", value, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                </div>
                 <Textarea
                   id="content"
                   placeholder="Task Description"

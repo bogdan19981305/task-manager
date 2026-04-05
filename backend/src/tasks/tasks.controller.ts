@@ -7,8 +7,10 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { UserEntity } from 'src/auth/entities/user.entity';
@@ -16,13 +18,52 @@ import { Task } from 'src/generated/prisma/client';
 import { Role } from 'src/generated/prisma/enums';
 
 import { TaskCreateDto } from './dto/task-create.dto';
+import { TaskGenerateDescriptionDto } from './dto/task-generate-description.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
 import { TaskUpdateDto } from './dto/task-update.dto';
+import { TaskAiService } from './task-ai.service';
 import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly taskAiService: TaskAiService,
+  ) {}
+
+  @ApiOperation({
+    summary: 'Stream AI-generated task description (admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Plain text stream (UTF-8 chunks)' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 503, description: 'AI unavailable' })
+  @ApiBody({ type: TaskGenerateDescriptionDto })
+  @Auth(Role.ADMIN)
+  @Post('generate-description')
+  async generateDescription(
+    @Body() body: TaskGenerateDescriptionDto,
+    @Res({ passthrough: false }) res: Response,
+  ): Promise<void> {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    try {
+      for await (const chunk of this.taskAiService.streamTaskDescription(
+        body.title,
+      )) {
+        res.write(chunk);
+      }
+      res.end();
+    } catch {
+      if (!res.headersSent) {
+        res.status(503).end();
+        return;
+      }
+      res.end();
+    }
+  }
 
   @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({ status: 201, description: 'Task created successfully' })
