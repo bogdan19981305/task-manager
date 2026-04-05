@@ -1,5 +1,10 @@
 import type { PublicPlan } from "@/shared/types/plans";
 
+/** How the public pricing CTA should behave (link vs Stripe checkout). */
+export type PlanPurchaseAction =
+  | { kind: "link"; href: string }
+  | { kind: "checkout"; monthPlanId: number | null; yearPlanId: number | null };
+
 type PlanTierGroup = {
   key: PublicPlan["key"];
   rows: PublicPlan[];
@@ -92,7 +97,8 @@ export type LandingPricingPlan = {
   monthlyPrice: string;
   yearlyPrice: string;
   features: { text: string }[];
-  button: { text: string; url: string };
+  button: { text: string };
+  purchaseAction: PlanPurchaseAction;
   highlighted: boolean;
   showStarterUpsellLine: boolean;
 };
@@ -105,6 +111,17 @@ export function mapPublicPlansToLandingCards(
     const primary = primaryRowForTier(tier);
     const { monthlyPrice, yearlyPrice } = pricesForTier(tier);
     const { key } = tier;
+    const monthly = tier.rows.find((r) => r.interval === "MONTH");
+    const yearly = tier.rows.find((r) => r.interval === "YEAR");
+    const purchaseAction: PlanPurchaseAction =
+      key === "PREMIUM"
+        ? { kind: "link", href: "/contact" }
+        : {
+            kind: "checkout",
+            monthPlanId: monthly?.id ?? null,
+            yearPlanId: yearly?.id ?? null,
+          };
+
     return {
       id: key,
       name: primary.name,
@@ -114,8 +131,8 @@ export function mapPublicPlansToLandingCards(
       features: primary.features.map((text) => ({ text })),
       button: {
         text: key === "PREMIUM" ? "Contact sales" : "Get started",
-        url: key === "PREMIUM" ? "/contact" : "/auth/sign-up",
       },
+      purchaseAction,
       highlighted: key === "PRO",
       showStarterUpsellLine: key === "PRO",
     };
@@ -129,8 +146,8 @@ export type ComparisonPlanCard = {
   description: string;
   monthlyPrice: string;
   yearlyPrice: string;
-  href: string;
   cta: string;
+  purchaseAction: PlanPurchaseAction;
   highlighted: boolean;
   featureBullets: string[];
 };
@@ -143,6 +160,17 @@ export function mapPublicPlansToComparisonCards(
     const primary = primaryRowForTier(tier);
     const { monthlyPrice, yearlyPrice } = pricesForTier(tier);
     const { key } = tier;
+    const monthly = tier.rows.find((r) => r.interval === "MONTH");
+    const yearly = tier.rows.find((r) => r.interval === "YEAR");
+    const purchaseAction: PlanPurchaseAction =
+      key === "PREMIUM"
+        ? { kind: "link", href: "/contact" }
+        : {
+            kind: "checkout",
+            monthPlanId: monthly?.id ?? null,
+            yearPlanId: yearly?.id ?? null,
+          };
+
     return {
       id: key,
       key,
@@ -150,8 +178,8 @@ export function mapPublicPlansToComparisonCards(
       description: primary.description ?? "",
       monthlyPrice,
       yearlyPrice,
-      href: key === "PREMIUM" ? "/contact" : "/auth/sign-up",
       cta: key === "PREMIUM" ? "Contact sales" : "Get started",
+      purchaseAction,
       highlighted: key === "PRO",
       featureBullets: primary.features,
     };

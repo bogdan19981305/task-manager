@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { api } from "@/shared/api/api";
+import { safeInternalRedirectPath } from "@/shared/lib/safe-internal-redirect";
 
 import { type LoginDto } from "./schema";
 
@@ -17,7 +18,9 @@ export function useLogin() {
     onSuccess: async (data) => {
       await qc.setQueryData(["me"], data);
       await qc.invalidateQueries({ queryKey: ["me"] });
-      router.push("/dashboard");
+      const params = new URLSearchParams(window.location.search);
+      const next = safeInternalRedirectPath(params.get("redirect"));
+      router.push(next ?? "/dashboard");
     },
   });
 }

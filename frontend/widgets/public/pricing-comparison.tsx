@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -23,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PlanPurchaseCtaButton } from "@/features/payments/ui/plan-purchase-cta-button";
 import { cn } from "@/lib/utils";
 import {
   buildFeatureMatrixFromPlans,
@@ -42,8 +42,8 @@ const STATIC_COMPARISON_CARDS: ComparisonPlanCard[] = [
     description: "For solo builders and small teams getting organized",
     monthlyPrice: "$19",
     yearlyPrice: "$179",
-    href: "/auth/sign-up",
     cta: "Get started",
+    purchaseAction: { kind: "link", href: "/auth/sign-in" },
     highlighted: false,
     featureBullets: [
       "Up to 5 teammates",
@@ -58,8 +58,8 @@ const STATIC_COMPARISON_CARDS: ComparisonPlanCard[] = [
     description: "For teams that ship together every week",
     monthlyPrice: "$49",
     yearlyPrice: "$359",
-    href: "/auth/sign-up",
     cta: "Get started",
+    purchaseAction: { kind: "link", href: "/auth/sign-in" },
     highlighted: true,
     featureBullets: [
       "Everything in Starter",
@@ -74,8 +74,8 @@ const STATIC_COMPARISON_CARDS: ComparisonPlanCard[] = [
     description: "Security, scale, and support for whole organizations",
     monthlyPrice: "$99",
     yearlyPrice: "$899",
-    href: "/contact",
     cta: "Contact sales",
+    purchaseAction: { kind: "link", href: "/contact" },
     highlighted: false,
     featureBullets: [
       "Everything in Team",
@@ -285,13 +285,13 @@ export function PricingComparison({ dbPlans = null }: PricingComparisonProps) {
                   </ul>
                 </CardContent>
                 <CardFooter className="mt-auto border-t-0 bg-transparent p-4 pt-0">
-                  <Button
-                    asChild
+                  <PlanPurchaseCtaButton
                     className="w-full rounded-lg"
+                    label={plan.cta}
+                    action={plan.purchaseAction}
+                    isYearly={isYearly}
                     variant={plan.highlighted ? "default" : "outline"}
-                  >
-                    <Link href={plan.href}>{plan.cta}</Link>
-                  </Button>
+                  />
                 </CardFooter>
               </Card>
             ))}

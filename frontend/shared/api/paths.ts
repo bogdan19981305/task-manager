@@ -2,6 +2,7 @@
 export const API_PATHS = {
   auth: {
     login: "/auth/login",
+    me: "/auth/me",
     refresh: "/auth/refresh",
     google: "/auth/google",
     github: "/auth/github",
@@ -12,5 +13,8 @@ export const API_PATHS = {
   },
   plans: {
     publicList: "/plans",
+  },
+  payments: {
+    checkoutSession: "/payments/checkout-session",
   },
 } as const;
