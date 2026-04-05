@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Plan } from 'src/generated/prisma/client';
+import { BillingInterval } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { PlanCreateDto } from './dto/plan-create.dto';
@@ -28,12 +29,14 @@ export class PlansService {
       select: {
         id: true,
         key: true,
+        interval: true,
         name: true,
         description: true,
         price: true,
         currency: true,
         features: true,
         sortOrder: true,
+        trialDays: true,
       },
     });
     return rows;
@@ -52,6 +55,11 @@ export class PlansService {
       return await this.prisma.plan.create({
         data: {
           key: dto.key,
+          interval: dto.interval ?? BillingInterval.MONTH,
+          trialDays:
+            dto.trialDays === undefined || dto.trialDays === null
+              ? null
+              : dto.trialDays,
           name: dto.name,
           description: dto.description ?? null,
           price: dto.price,
@@ -71,7 +79,9 @@ export class PlansService {
         'code' in e &&
         e.code === 'P2002'
       ) {
-        throw new ConflictException('A plan with this key already exists');
+        throw new ConflictException(
+          'A plan with this key and billing interval already exists',
+        );
       }
       throw e;
     }
@@ -84,6 +94,10 @@ export class PlansService {
         where: { id },
         data: {
           ...(dto.key !== undefined && { key: dto.key }),
+          ...(dto.interval !== undefined && { interval: dto.interval }),
+          ...(dto.trialDays !== undefined && {
+            trialDays: dto.trialDays === null ? null : dto.trialDays,
+          }),
           ...(dto.name !== undefined && { name: dto.name }),
           ...(dto.description !== undefined && {
             description: dto.description,
@@ -111,7 +125,9 @@ export class PlansService {
         'code' in e &&
         e.code === 'P2002'
       ) {
-        throw new ConflictException('A plan with this key already exists');
+        throw new ConflictException(
+          'A plan with this key and billing interval already exists',
+        );
       }
       throw e;
     }

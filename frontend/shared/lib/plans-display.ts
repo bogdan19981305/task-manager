@@ -1,5 +1,68 @@
 import type { PublicPlan } from "@/shared/types/plans";
 
+type PlanTierGroup = {
+  key: PublicPlan["key"];
+  rows: PublicPlan[];
+  sortOrder: number;
+};
+
+/** One marketing column per plan key; rows may include MONTH and YEAR prices. */
+function groupPublicPlansByTier(plans: PublicPlan[]): PlanTierGroup[] {
+  const map = new Map<PublicPlan["key"], PublicPlan[]>();
+  for (const p of plans) {
+    const list = map.get(p.key) ?? [];
+    list.push(p);
+    map.set(p.key, list);
+  }
+  return [...map.entries()]
+    .map(([key, rows]) => ({
+      key,
+      rows,
+      sortOrder: Math.min(...rows.map((r) => r.sortOrder)),
+    }))
+    .sort((a, b) => {
+      if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+      return a.key.localeCompare(b.key);
+    });
+}
+
+function primaryRowForTier(tier: PlanTierGroup): PublicPlan {
+  return (
+    tier.rows.find((r) => r.interval === "MONTH") ??
+    tier.rows.find((r) => r.interval === "YEAR") ??
+    tier.rows[0]!
+  );
+}
+
+function pricesForTier(tier: PlanTierGroup): {
+  monthlyPrice: string;
+  yearlyPrice: string;
+} {
+  const monthly = tier.rows.find((r) => r.interval === "MONTH");
+  const yearly = tier.rows.find((r) => r.interval === "YEAR");
+  const primary = primaryRowForTier(tier);
+
+  const monthlyPrice = monthly
+    ? formatPriceMinorUnits(monthly.price, monthly.currency)
+    : yearly
+      ? formatPriceMinorUnits(Math.round(yearly.price / 12), yearly.currency)
+      : formatPriceMinorUnits(primary.price, primary.currency);
+
+  const yearlyPrice = yearly
+    ? formatPriceMinorUnits(yearly.price, yearly.currency)
+    : monthly
+      ? formatPriceMinorUnits(
+          estimatedYearlyMinorFromMonthly(monthly.price),
+          monthly.currency,
+        )
+      : formatPriceMinorUnits(
+          estimatedYearlyMinorFromMonthly(primary.price),
+          primary.currency,
+        );
+
+  return { monthlyPrice, yearlyPrice };
+}
+
 export function formatPriceMinorUnits(
   amountMinor: number,
   currency: string,
@@ -37,23 +100,26 @@ export type LandingPricingPlan = {
 export function mapPublicPlansToLandingCards(
   plans: PublicPlan[],
 ): LandingPricingPlan[] {
-  return plans.map((p) => ({
-    id: p.key,
-    name: p.name,
-    description: p.description ?? "",
-    monthlyPrice: formatPriceMinorUnits(p.price, p.currency),
-    yearlyPrice: formatPriceMinorUnits(
-      estimatedYearlyMinorFromMonthly(p.price),
-      p.currency,
-    ),
-    features: p.features.map((text) => ({ text })),
-    button: {
-      text: p.key === "PREMIUM" ? "Contact sales" : "Get started",
-      url: p.key === "PREMIUM" ? "/contact" : "/auth/sign-up",
-    },
-    highlighted: p.key === "PRO",
-    showStarterUpsellLine: p.key === "PRO",
-  }));
+  const tiers = groupPublicPlansByTier(plans);
+  return tiers.map((tier) => {
+    const primary = primaryRowForTier(tier);
+    const { monthlyPrice, yearlyPrice } = pricesForTier(tier);
+    const { key } = tier;
+    return {
+      id: key,
+      name: primary.name,
+      description: primary.description ?? "",
+      monthlyPrice,
+      yearlyPrice,
+      features: primary.features.map((text) => ({ text })),
+      button: {
+        text: key === "PREMIUM" ? "Contact sales" : "Get started",
+        url: key === "PREMIUM" ? "/contact" : "/auth/sign-up",
+      },
+      highlighted: key === "PRO",
+      showStarterUpsellLine: key === "PRO",
+    };
+  });
 }
 
 export type ComparisonPlanCard = {
@@ -72,21 +138,24 @@ export type ComparisonPlanCard = {
 export function mapPublicPlansToComparisonCards(
   plans: PublicPlan[],
 ): ComparisonPlanCard[] {
-  return plans.map((p) => ({
-    id: p.key,
-    key: p.key,
-    name: p.name,
-    description: p.description ?? "",
-    monthlyPrice: formatPriceMinorUnits(p.price, p.currency),
-    yearlyPrice: formatPriceMinorUnits(
-      estimatedYearlyMinorFromMonthly(p.price),
-      p.currency,
-    ),
-    href: p.key === "PREMIUM" ? "/contact" : "/auth/sign-up",
-    cta: p.key === "PREMIUM" ? "Contact sales" : "Get started",
-    highlighted: p.key === "PRO",
-    featureBullets: p.features,
-  }));
+  const tiers = groupPublicPlansByTier(plans);
+  return tiers.map((tier) => {
+    const primary = primaryRowForTier(tier);
+    const { monthlyPrice, yearlyPrice } = pricesForTier(tier);
+    const { key } = tier;
+    return {
+      id: key,
+      key,
+      name: primary.name,
+      description: primary.description ?? "",
+      monthlyPrice,
+      yearlyPrice,
+      href: key === "PREMIUM" ? "/contact" : "/auth/sign-up",
+      cta: key === "PREMIUM" ? "Contact sales" : "Get started",
+      highlighted: key === "PRO",
+      featureBullets: primary.features,
+    };
+  });
 }
 
 export type FeatureMatrixRow = {
@@ -97,10 +166,11 @@ export type FeatureMatrixRow = {
 export function buildFeatureMatrixFromPlans(
   plans: PublicPlan[],
 ): FeatureMatrixRow[] {
+  const tiers = groupPublicPlansByTier(plans);
   const ordered: string[] = [];
   const seen = new Set<string>();
-  for (const plan of plans) {
-    for (const f of plan.features) {
+  for (const tier of tiers) {
+    for (const f of primaryRowForTier(tier).features) {
       if (!seen.has(f)) {
         seen.add(f);
         ordered.push(f);
@@ -109,6 +179,8 @@ export function buildFeatureMatrixFromPlans(
   }
   return ordered.map((feature) => ({
     feature,
-    included: plans.map((p) => p.features.includes(feature)),
+    included: tiers.map((tier) =>
+      primaryRowForTier(tier).features.includes(feature),
+    ),
   }));
 }

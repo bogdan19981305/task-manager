@@ -1,10 +1,11 @@
-import type { PlanKey } from "@/shared/types/plans";
+import type { BillingInterval, PlanKey } from "@/shared/types/plans";
 
-export type { PlanKey };
+export type { BillingInterval, PlanKey };
 
 export type PlanDto = {
   id: number;
   key: PlanKey;
+  interval: BillingInterval;
   name: string;
   description: string | null;
   price: number;
@@ -15,12 +16,15 @@ export type PlanDto = {
   stripeProductId: string | null;
   isActive: boolean;
   sortOrder: number;
+  trialDays: number | null;
   createdAt: string;
   updatedAt: string;
 };
 
 export type PlanCreatePayload = {
   key: PlanKey;
+  interval?: BillingInterval;
+  trialDays?: number | null;
   name: string;
   description?: string;
   price: number;

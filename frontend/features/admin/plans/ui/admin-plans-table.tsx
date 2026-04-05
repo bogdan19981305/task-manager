@@ -64,8 +64,8 @@ export function AdminPlansTable() {
         <div>
           <h1 className="text-2xl font-bold">Plans</h1>
           <p className="text-muted-foreground text-sm">
-            Subscription plans (admin only). Price is stored in minor currency
-            units (e.g. cents).
+            Each row is a subscription price (plan key + monthly or yearly
+            interval). Amounts are in minor currency units (e.g. cents).
           </p>
         </div>
         <Button
@@ -90,8 +90,10 @@ export function AdminPlansTable() {
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b">
               <TableHead className="h-12 px-4 font-medium">Key</TableHead>
+              <TableHead className="h-12 px-4 font-medium">Interval</TableHead>
               <TableHead className="h-12 px-4 font-medium">Name</TableHead>
               <TableHead className="h-12 px-4 font-medium">Price</TableHead>
+              <TableHead className="h-12 px-4 font-medium">Trial</TableHead>
               <TableHead className="h-12 px-4 font-medium">Currency</TableHead>
               <TableHead className="h-12 px-4 font-medium">Active</TableHead>
               <TableHead className="h-12 px-4 font-medium">Sort</TableHead>
@@ -107,8 +109,16 @@ export function AdminPlansTable() {
                   <TableCell className="px-4 font-mono text-sm">
                     {plan.key}
                   </TableCell>
+                  <TableCell className="px-4 font-mono text-sm">
+                    {plan.interval}
+                  </TableCell>
                   <TableCell className="px-4">{plan.name}</TableCell>
-                  <TableCell className="px-4">{plan.price}</TableCell>
+                  <TableCell className="px-4">
+                    {Number(plan.price / 100).toFixed(2) + " " + plan.currency}
+                  </TableCell>
+                  <TableCell className="px-4">
+                    {plan.trialDays != null ? `${plan.trialDays}d` : "—"}
+                  </TableCell>
                   <TableCell className="px-4 uppercase">
                     {plan.currency}
                   </TableCell>
@@ -145,7 +155,7 @@ export function AdminPlansTable() {
             {isLoading &&
               [...Array(5)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={7} className="h-16 px-4">
+                  <TableCell colSpan={9} className="h-16 px-4">
                     <Skeleton className="h-4 w-full" />
                   </TableCell>
                 </TableRow>
@@ -153,7 +163,7 @@ export function AdminPlansTable() {
             {!isLoading && plans?.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={9}
                   className="text-muted-foreground px-4 py-10 text-center"
                 >
                   No plans yet. Create one to get started.
@@ -180,7 +190,7 @@ export function AdminPlansTable() {
             <AlertDialogTitle>Delete plan?</AlertDialogTitle>
             <AlertDialogDescription>
               {deleteTarget
-                ? `This will permanently remove “${deleteTarget.name}” (${deleteTarget.key}). You cannot delete a plan that has payments or user subscriptions linked to it.`
+                ? `This will permanently remove “${deleteTarget.name}” (${deleteTarget.key}, ${deleteTarget.interval}). You cannot delete a plan that has payments or user subscriptions linked to it.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>

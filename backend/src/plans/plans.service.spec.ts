@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Plan } from 'src/generated/prisma/client';
-import { PlanKey } from 'src/generated/prisma/enums';
+import { BillingInterval, PlanKey } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { PlansService } from './plans.service';
@@ -9,6 +9,7 @@ import { PlansService } from './plans.service';
 const mockPlan: Plan = {
   id: 1,
   key: PlanKey.STARTER,
+  interval: BillingInterval.MONTH,
   name: 'Starter',
   description: null,
   price: 0,
@@ -19,6 +20,7 @@ const mockPlan: Plan = {
   stripeProductId: null,
   isActive: true,
   sortOrder: 0,
+  trialDays: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -69,12 +71,14 @@ describe('PlansService', () => {
       const publicRow = {
         id: 1,
         key: PlanKey.STARTER,
+        interval: BillingInterval.MONTH,
         name: 'Starter',
         description: null,
         price: 0,
         currency: 'usd',
         features: ['A'],
         sortOrder: 0,
+        trialDays: null,
       };
       mockPrismaService.plan.findMany.mockResolvedValueOnce([publicRow]);
 
@@ -86,12 +90,14 @@ describe('PlansService', () => {
         select: {
           id: true,
           key: true,
+          interval: true,
           name: true,
           description: true,
           price: true,
           currency: true,
           features: true,
           sortOrder: true,
+          trialDays: true,
         },
       });
     });
@@ -125,6 +131,8 @@ describe('PlansService', () => {
       expect(mockPrismaService.plan.create).toHaveBeenCalledWith({
         data: {
           key: dto.key,
+          interval: BillingInterval.MONTH,
+          trialDays: null,
           name: dto.name,
           description: null,
           price: dto.price,
@@ -150,7 +158,9 @@ describe('PlansService', () => {
           permissions: [],
         }),
       ).rejects.toThrow(
-        new ConflictException('A plan with this key already exists'),
+        new ConflictException(
+          'A plan with this key and billing interval already exists',
+        ),
       );
     });
   });
@@ -172,7 +182,9 @@ describe('PlansService', () => {
     it('should map unique key violation to ConflictException', async () => {
       mockPrismaService.plan.update.mockRejectedValueOnce({ code: 'P2002' });
       await expect(service.update(1, { key: PlanKey.PREMIUM })).rejects.toThrow(
-        new ConflictException('A plan with this key already exists'),
+        new ConflictException(
+          'A plan with this key and billing interval already exists',
+        ),
       );
     });
   });
