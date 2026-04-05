@@ -5,6 +5,9 @@ export const AUTH_COOKIES = {
 
 export const ACCESS_TTL_MS = 15 * 60 * 1000; // 15 min
 
+/** Short-lived JWT for Socket.IO only (not the same as access token). */
+export const SOCKET_HANDSHAKE_TTL_MS = 10 * 60 * 1000; // 10 min
+
 export const REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 дней
 
 export const REFRESH_TTL_MS = REFRESH_TTL_SECONDS * 1000;

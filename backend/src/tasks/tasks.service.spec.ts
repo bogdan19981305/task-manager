@@ -7,6 +7,7 @@ import { PaginatedResponse } from 'src/types/paginated-response';
 
 import { TaskQueryDto } from './dto/task-query.dto';
 import { TasksService } from './tasks.service';
+import { TasksRealtimeService } from './tasks-realtime.service';
 
 const mockTask: Task = {
   id: '1',
@@ -62,6 +63,12 @@ const mockRedisService = {
   deleteKeysByPattern: jest.fn(),
 };
 
+const mockTasksRealtimeService = {
+  emitTaskCreated: jest.fn(),
+  emitTaskUpdated: jest.fn(),
+  emitTaskDeleted: jest.fn(),
+};
+
 const mockPrismaService = {
   task: {
     findUnique: jest.fn().mockResolvedValue(mockTask),
@@ -90,6 +97,10 @@ describe('TasksService', () => {
         {
           provide: RedisService,
           useValue: mockRedisService,
+        },
+        {
+          provide: TasksRealtimeService,
+          useValue: mockTasksRealtimeService,
         },
       ],
     }).compile();

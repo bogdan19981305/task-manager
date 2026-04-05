@@ -14,10 +14,12 @@ import {
   ACCESS_TTL_MS,
   REDIS_REFRESH_KEY,
   REFRESH_TTL_SECONDS,
+  SOCKET_HANDSHAKE_TTL_MS,
 } from './constants/auth.constants';
 import { LoginDto } from './dto/login-dto.dto';
 import { RegisterDto } from './dto/register-dto.dto';
-import { JwtSignPayload } from './types/jwt.type';
+import { UserEntity } from './entities/user.entity';
+import { JwtSignPayload, SocketHandshakeJwtPayload } from './types/jwt.type';
 import { SessionUserType } from './types/session-user.type';
 import { ThirdPartyAuthUser } from './types/third-party-auth-user.type';
 
@@ -104,6 +106,19 @@ export class AuthService {
 
   private signAccessToken(payload: JwtSignPayload) {
     return this.jwtService.sign(payload, { expiresIn: ms(ACCESS_TTL_MS) });
+  }
+
+  /** Socket.IO-only JWT (`typ: 'socket'`); issued after cookie session is verified via HTTP. */
+  signSocketHandshakeToken(user: UserEntity): string {
+    const payload: SocketHandshakeJwtPayload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      typ: 'socket',
+    };
+    return this.jwtService.sign(payload, {
+      expiresIn: ms(SOCKET_HANDSHAKE_TTL_MS),
+    });
   }
 
   private signRefreshToken(payload: JwtSignPayload) {

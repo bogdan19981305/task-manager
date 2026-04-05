@@ -181,4 +181,15 @@ export class AuthController {
   me(@CurrentUser() user: UserEntity) {
     return user;
   }
+
+  @ApiOperation({
+    summary: 'Short-lived JWT for Socket.IO (handshake auth)',
+  })
+  @ApiResponse({ status: 200, description: 'Token issued' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @Get('socket-token')
+  @Auth()
+  socketToken(@CurrentUser() user: UserEntity) {
+    return { token: this.authService.signSocketHandshakeToken(user) };
+  }
 }

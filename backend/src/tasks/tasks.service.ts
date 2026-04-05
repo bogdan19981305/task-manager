@@ -13,12 +13,14 @@ import { TASK_INCLUDE_CONSTANT } from './constants/task-include-constant';
 import { TaskCreateDto } from './dto/task-create.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
 import { TaskUpdateDto } from './dto/task-update.dto';
+import { TasksRealtimeService } from './tasks-realtime.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redisService: RedisService,
+    private readonly tasksRealtime: TasksRealtimeService,
   ) {}
 
   async createTask(userId: number, createTaskDto: TaskCreateDto) {
@@ -27,9 +29,11 @@ export class TasksService {
         ...createTaskDto,
         creatorId: userId,
       },
+      include: TASK_INCLUDE_CONSTANT,
     });
 
     await this.redisService.deleteKeysByPattern(ALL_TASK_CACHE_KEY);
+    this.tasksRealtime.emitTaskCreated(task);
 
     return task;
   }
@@ -122,6 +126,7 @@ export class TasksService {
       include: TASK_INCLUDE_CONSTANT,
     });
     await this.redisService.deleteKeysByPattern(ALL_TASK_CACHE_KEY);
+    this.tasksRealtime.emitTaskUpdated(updatedTask);
 
     return updatedTask;
   }
@@ -141,6 +146,7 @@ export class TasksService {
       include: TASK_INCLUDE_CONSTANT,
     });
     await this.redisService.deleteKeysByPattern(ALL_TASK_CACHE_KEY);
+    this.tasksRealtime.emitTaskDeleted(deletedTask);
 
     return deletedTask;
   }
